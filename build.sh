@@ -99,9 +99,9 @@ mkdir -p /tmp/rkt_data_dist /tmp/rkt_data_pub
 cp -r "${SCRIPT_DIR}/dist"/* /tmp/rkt_data_dist/
 cp -r "${SCRIPT_DIR}/publish"/* /tmp/rkt_data_pub/
 
-# 同步 rrs 分支 (无历史父提交，永远单 Commit)
+# 同步 rrs 分支 (无历史父提交，永远单 Commit，仅保留纯净产物)
 git -C "${SCRIPT_DIR}" checkout --orphan rrs-temp >/dev/null 2>&1
-git -C "${SCRIPT_DIR}" rm -rf . >/dev/null 2>&1 || true
+find "${SCRIPT_DIR}" -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
 cp -r /tmp/rkt_data_dist/* "${SCRIPT_DIR}/"
 git -C "${SCRIPT_DIR}" checkout master -- README.md >/dev/null 2>&1 || true
 git -C "${SCRIPT_DIR}" add .
@@ -109,9 +109,9 @@ git -C "${SCRIPT_DIR}" commit -m "Auto-compiled rulesets: $(date -u +'%Y-%m-%d %
 git -C "${SCRIPT_DIR}" branch -D rrs >/dev/null 2>&1 || true
 git -C "${SCRIPT_DIR}" branch -m rrs
 
-# 同步 release 分支 (无历史父提交，永远单 Commit)
+# 同步 release 分支 (无历史父提交，永远单 Commit，仅保留纯净资产包与数据库)
 git -C "${SCRIPT_DIR}" checkout --orphan release-temp >/dev/null 2>&1
-git -C "${SCRIPT_DIR}" rm -rf . >/dev/null 2>&1 || true
+find "${SCRIPT_DIR}" -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
 cp -r /tmp/rkt_data_pub/* "${SCRIPT_DIR}/"
 git -C "${SCRIPT_DIR}" checkout master -- README.md >/dev/null 2>&1 || true
 git -C "${SCRIPT_DIR}" add .
