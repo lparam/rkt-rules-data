@@ -61,18 +61,28 @@ https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geoip/geoip-private.rr
 
 ### 2. `release` 分支（离线大包与复合数据库）
 
+#### 🌟 表格一：推荐核心资产（`rkt` 原生推荐：极速匹配、低内存占用）
+
 | 产物名称 | 说明 | 适用场景 | 预估体积 |
 | :--- | :--- | :--- | :--- |
-| **`geoip.rdb`** / `geoip.metadb` | **复合三合一全量数据库**（国家 + 8.4 万 ASN + 专有标签） | 离线单文件全量首选 (PC/服务器) | ~8.4 MB |
+| **`geoip.rdb`** / `geoip.metadb` | **复合三合一全量数据库**（国家 + 8.4 万全量 ASN + 专有标签） | 离线单文件全量首选 (PC/服务器) | **~8.4 MB** |
 | **`geoip-lite.rdb`** / `geoip-lite.metadb` | **复合三合一精简数据库**（核心国家 + 常用专有标签 + 主流 ASN 映射） | 软路由 / 低内存嵌入式设备首选 | **~386 KB** |
-| **`BundleRRS.7z`** | 全量 1,800+ 个 `.rrs` 规则集归档总包 | PC / 桌面端离线部署 | ~9.2 MB |
-| **`BundleRRS-lite.7z`** | 常用核心 `.rrs` 归档精简包 | 软路由离线极速安装 | ~2.6 MB |
-| `country.mmdb` | MaxMind 全量国家库 | 传统 MMDB 兼容场景 | ~7.6 MB |
-| `country-lite.mmdb` | MaxMind 精简国家库 | 软路由兼容场景 | ~385 KB |
-| `GeoLite2-ASN.mmdb` | MaxMind 全量 ASN 自治域库 | 传统 ASN 兼容场景 | ~12 MB |
-| `geosite.dat` / `geoip.dat` | V2Ray 全量兼容库 | 兼容传统客户端 | ~11 MB / ~17 MB |
-| `geoip-lite.dat` | V2Ray 精简国家库 | 兼容传统轻量客户端 | ~203 KB |
-| `sha256sums.txt` | 全量发布资产哈希校验和 | 完整性校验 | ~1.2 KB |
+| **`BundleRRS.7z`** | 全量 1,800+ 个原生 `.rrs` 规则集归档总包 | PC / 桌面端离线部署 | **~9.2 MB** |
+| **`BundleRRS-lite.7z`** | 常用核心 `.rrs` 规则集归档精简包 | 软路由离线极速安装 | **~2.6 MB** |
+| **`sha256sums.txt`** | 全量发布资产哈希校验和 | 完整性校验 | ~1.2 KB |
+
+---
+
+#### 📦 表格二：经典兼容资产（仅用于兼容传统 V2Ray / Clash / sing-box 旧生态，不推荐新项目使用）
+
+| 产物名称 | 说明 | 兼容定位与现状说明 | 预估体积 |
+| :--- | :--- | :--- | :--- |
+| `country.mmdb` | MaxMind 全量国家库 | 传统 MMDB 格式兼容（⚠️ 不支持 ASN，建议使用 `geoip.rdb`） | ~7.6 MB |
+| `country-lite.mmdb` | MaxMind 精简国家库 | 传统轻量国家库兼容（建议使用 `geoip-lite.rdb`） | ~385 KB |
+| `GeoLite2-ASN.mmdb` | MaxMind 全量 ASN 自治域库 | 传统纯 ASN 库兼容（⚠️ 不支持国家代码） | ~12 MB |
+| `geosite.dat` | V2Ray 全量域名数据库 | 传统 Protobuf 格式兼容（⚠️ 内存占用高达 80MB+，已被 `.rrs` 取代） | ~11 MB |
+| `geoip.dat` | V2Ray 全量 IP 数据库 | 传统 Protobuf 格式兼容（已被 `geoip.rdb` 取代） | ~17 MB |
+| `geoip-lite.dat` | V2Ray 精简 IP 数据库 | 传统轻量客户端兼容 | ~203 KB |
 
 ---
 
