@@ -17,7 +17,7 @@
 ## 📦 分支组织与产物索引
 
 ### 1. `rrs` 分支（CDN 单文件按需加速层）
-存放所有单独平铺的 `.rrs` 规则集文件，支持 jsDelivr / Fastly 全球 CDN 直连：
+存放所有按语义分类平铺的 `.rrs` 规则集文件，支持 jsDelivr / Fastly 全球 CDN 直连：
 
 ```text
 ├── geosite/
@@ -48,17 +48,13 @@ https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geosite/geosite-cn.rrs
 https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geosite/geosite-openai.rrs
 https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geosite/geosite-google.rrs
 https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geosite/geosite-category-ads-all.rrs
+https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geosite/geosite-geolocation-!cn.rrs
 
 # 常用 IP 网段规则 (GeoIP)
 https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geoip/geoip-cn.rrs
 https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geoip/geoip-telegram.rrs
 https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geoip/geoip-cloudflare.rrs
 https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geoip/geoip-private.rrs
-
-# 常用开箱即用三件套
-https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/direct-list.rrs
-https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/proxy-list.rrs
-https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/reject-list.rrs
 ```
 
 ---

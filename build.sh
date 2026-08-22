@@ -36,11 +36,6 @@ curl -fsSL --retry 3 --retry-delay 2 -o geoip.metadb https://github.com/MetaCube
 curl -fsSL --retry 3 --retry-delay 2 -o Country-lite.mmdb https://raw.githubusercontent.com/xishang0128/geoip/release/Country.mmdb
 curl -fsSL --retry 3 --retry-delay 2 -o geoip-lite.dat https://github.com/xishang0128/geoip/raw/release/geoip.dat
 curl -fsSL --retry 3 --retry-delay 2 -o geoip-lite.metadb https://github.com/MetaCubeX/meta-rules-dat/raw/release/geoip-lite.metadb
-
-# 文本三件套
-curl -fsSL --retry 3 --retry-delay 2 -o direct-list.txt https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/direct-list.txt
-curl -fsSL --retry 3 --retry-delay 2 -o proxy-list.txt https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/proxy-list.txt
-curl -fsSL --retry 3 --retry-delay 2 -o reject-list.txt https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/reject-list.txt
 echo "✅ 上游数据下载完毕"
 
 # 4. 调用编译器生成 .rrs
@@ -50,10 +45,6 @@ cd "${SCRIPT_DIR}"
 "${COMPILER}" convert site --input raw/geosite.dat --output-dir dist/geosite/
 "${COMPILER}" convert ip --input raw/geoip.dat --output-dir dist/geoip/
 "${COMPILER}" convert asn --input raw/GeoLite2-ASN.mmdb --output-dir dist/asn/ --hot-only
-
-"${COMPILER}" convert text --input raw/direct-list.txt --output dist/direct-list.rrs --type domain
-"${COMPILER}" convert text --input raw/proxy-list.txt --output dist/proxy-list.rrs --type domain
-"${COMPILER}" convert text --input raw/reject-list.txt --output dist/reject-list.rrs --type domain
 echo "✅ 规则集编译完成"
 
 # 5. 校验与审查产物
@@ -77,10 +68,10 @@ echo "🧪 正在执行规则匹配测试..."
 # 7. 打包归档 Full 与 Lite 总包
 echo "📦 正在打包归档资产..."
 cd "${SCRIPT_DIR}/dist"
-7z a -mx=9 "${SCRIPT_DIR}/publish/BundleRRS.7z" ./*.rrs ./*/*.rrs
+7z a -mx=9 "${SCRIPT_DIR}/publish/BundleRRS.7z" ./*/*.rrs
 
 mkdir -p /tmp/lite_rrs
-cp geosite/geosite-cn.rrs geosite/geosite-openai.rrs geosite/geosite-google.rrs geosite/geosite-category-ads-all.rrs geoip/geoip-cn.rrs geoip/geoip-private.rrs ./*.rrs /tmp/lite_rrs/ 2>/dev/null || true
+cp geosite/geosite-cn.rrs geosite/geosite-openai.rrs geosite/geosite-google.rrs geosite/geosite-category-ads-all.rrs geoip/geoip-cn.rrs geoip/geoip-private.rrs /tmp/lite_rrs/ 2>/dev/null || true
 cd /tmp/lite_rrs && 7z a -mx=9 "${SCRIPT_DIR}/publish/BundleRRS-lite.7z" ./*.rrs && cd -
 rm -rf /tmp/lite_rrs
 
@@ -96,7 +87,6 @@ cp raw/geoip.metadb publish/geoip.metadb
 cp raw/geoip.metadb publish/geoip.rdb
 cp raw/geoip-lite.metadb publish/geoip-lite.metadb
 cp raw/geoip-lite.metadb publish/geoip-lite.rdb
-cp dist/*.rrs publish/
 
 # 生成校验和
 cd publish
