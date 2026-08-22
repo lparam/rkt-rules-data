@@ -43,6 +43,7 @@ jobs:
           # 2. 软路由/低内存专用精简数据 (Lite)
           curl -fsSL --retry 3 --retry-delay 2 -o Country-lite.mmdb https://raw.githubusercontent.com/xishang0128/geoip/release/Country.mmdb
           curl -fsSL --retry 3 --retry-delay 2 -o geoip-lite.dat https://github.com/xishang0128/geoip/raw/release/geoip.dat
+          curl -fsSL --retry 3 --retry-delay 2 -o geoip-lite.metadb https://github.com/MetaCubeX/meta-rules-dat/raw/release/geoip-lite.metadb
           
           # 3. 极简开箱三件套文本
           curl -fsSL --retry 3 --retry-delay 2 -o direct-list.txt https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/direct-list.txt
@@ -74,7 +75,7 @@ jobs:
           cd /tmp/lite_rrs && 7z a -mx=9 /tmp/BundleRRS-lite.7z ./*.rrs && cd -
           mv /tmp/BundleRRS-lite.7z publish/
           
-          # 3. 归档单体大数据库与复合库
+          # 3. 归档单体大数据库与复合库 (Full & Lite)
           cp raw/Country.mmdb publish/country.mmdb
           cp raw/Country-lite.mmdb publish/country-lite.mmdb
           cp raw/GeoLite2-ASN.mmdb publish/GeoLite2-ASN.mmdb
@@ -83,6 +84,8 @@ jobs:
           cp raw/geosite.dat publish/geosite.dat
           cp raw/geoip.metadb publish/geoip.metadb
           cp raw/geoip.metadb publish/geoip.rdb
+          cp raw/geoip-lite.metadb publish/geoip-lite.metadb
+          cp raw/geoip-lite.metadb publish/geoip-lite.rdb
           cp dist/*.rrs publish/
           
           # 4. 生成校验和

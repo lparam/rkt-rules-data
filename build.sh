@@ -25,15 +25,19 @@ mkdir -p "${SCRIPT_DIR}/raw" "${SCRIPT_DIR}/dist/geosite" "${SCRIPT_DIR}/dist/ge
 echo "🌐 正在下载上游清洗规则数据源 (带重试)..."
 cd "${SCRIPT_DIR}/raw"
 
+# 全量数据
 curl -fsSL --retry 3 --retry-delay 2 -o GeoLite2-ASN.mmdb https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-ASN.mmdb
 curl -fsSL --retry 3 --retry-delay 2 -o Country.mmdb https://raw.githubusercontent.com/Loyalsoldier/geoip/release/Country.mmdb
 curl -fsSL --retry 3 --retry-delay 2 -o geoip.dat https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geoip.dat
 curl -fsSL --retry 3 --retry-delay 2 -o geosite.dat https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geosite.dat
-
-curl -fsSL --retry 3 --retry-delay 2 -o Country-lite.mmdb https://raw.githubusercontent.com/xishang0128/geoip/release/Country.mmdb
-curl -fsSL --retry 3 --retry-delay 2 -o geoip-lite.dat https://github.com/xishang0128/geoip/raw/release/geoip.dat
 curl -fsSL --retry 3 --retry-delay 2 -o geoip.metadb https://github.com/MetaCubeX/meta-rules-dat/raw/release/geoip.metadb
 
+# 精简数据 (Lite)
+curl -fsSL --retry 3 --retry-delay 2 -o Country-lite.mmdb https://raw.githubusercontent.com/xishang0128/geoip/release/Country.mmdb
+curl -fsSL --retry 3 --retry-delay 2 -o geoip-lite.dat https://github.com/xishang0128/geoip/raw/release/geoip.dat
+curl -fsSL --retry 3 --retry-delay 2 -o geoip-lite.metadb https://github.com/MetaCubeX/meta-rules-dat/raw/release/geoip-lite.metadb
+
+# 文本三件套
 curl -fsSL --retry 3 --retry-delay 2 -o direct-list.txt https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/direct-list.txt
 curl -fsSL --retry 3 --retry-delay 2 -o proxy-list.txt https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/proxy-list.txt
 curl -fsSL --retry 3 --retry-delay 2 -o reject-list.txt https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/reject-list.txt
@@ -59,6 +63,7 @@ echo "🔍 正在抽样审查编译产物与复合数据库..."
 "${COMPILER}" inspect dist/geoip/geoip-cn.rrs
 "${COMPILER}" inspect dist/asn/AS13335.rrs
 "${COMPILER}" inspect raw/geoip.metadb
+"${COMPILER}" inspect raw/geoip-lite.metadb
 
 # 6. 规则命中测试
 echo "🧪 正在执行规则匹配测试..."
@@ -66,6 +71,8 @@ echo "🧪 正在执行规则匹配测试..."
 "${COMPILER}" test domain --ruleset dist/geosite/geosite-openai.rrs --target "api.openai.com"
 "${COMPILER}" test ip --ruleset dist/geoip/geoip-cn.rrs --target "114.114.114.114"
 "${COMPILER}" test ip --ruleset dist/asn/AS13335.rrs --target "1.1.1.1"
+"${COMPILER}" test ip --ruleset raw/geoip.metadb --target "114.114.114.114"
+"${COMPILER}" test ip --ruleset raw/geoip-lite.metadb --target "114.114.114.114"
 
 # 7. 打包归档 Full 与 Lite 总包
 echo "📦 正在打包归档资产..."
@@ -87,6 +94,8 @@ cp raw/geoip-lite.dat publish/geoip-lite.dat
 cp raw/geosite.dat publish/geosite.dat
 cp raw/geoip.metadb publish/geoip.metadb
 cp raw/geoip.metadb publish/geoip.rdb
+cp raw/geoip-lite.metadb publish/geoip-lite.metadb
+cp raw/geoip-lite.metadb publish/geoip-lite.rdb
 cp dist/*.rrs publish/
 
 # 生成校验和
