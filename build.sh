@@ -92,8 +92,32 @@ cp raw/geoip-lite.metadb publish/geoip-lite.rdb
 cd publish
 sha256sum * > sha256sums.txt
 
+# 8. 自动同步交付物到本地 rrs 与 release 分支
+echo "🌿 正在将生成交付物同步至本地 rrs 与 release 分支..."
+rm -rf /tmp/rkt_data_dist /tmp/rkt_data_pub
+mkdir -p /tmp/rkt_data_dist /tmp/rkt_data_pub
+cp -r "${SCRIPT_DIR}/dist"/* /tmp/rkt_data_dist/
+cp -r "${SCRIPT_DIR}/publish"/* /tmp/rkt_data_pub/
+
+git -C "${SCRIPT_DIR}" checkout rrs
+git -C "${SCRIPT_DIR}" rm -rf . >/dev/null 2>&1 || true
+cp -r /tmp/rkt_data_dist/* "${SCRIPT_DIR}/"
+git -C "${SCRIPT_DIR}" checkout master -- README.md >/dev/null 2>&1 || true
+git -C "${SCRIPT_DIR}" add .
+git -C "${SCRIPT_DIR}" commit -m "Auto-compiled rulesets: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" || true
+
+git -C "${SCRIPT_DIR}" checkout release
+git -C "${SCRIPT_DIR}" rm -rf . >/dev/null 2>&1 || true
+cp -r /tmp/rkt_data_pub/* "${SCRIPT_DIR}/"
+git -C "${SCRIPT_DIR}" checkout master -- README.md >/dev/null 2>&1 || true
+git -C "${SCRIPT_DIR}" add .
+git -C "${SCRIPT_DIR}" commit -m "Release assets: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" || true
+
+git -C "${SCRIPT_DIR}" checkout -f master
+rm -rf /tmp/rkt_data_dist /tmp/rkt_data_pub
+
 echo "============================================================"
-echo "🎉 全流程构建与测试成功完成！"
+echo "🎉 全流程构建成功！rrs 与 release 分支已自动更新就绪！"
 echo "📊 publish/ 目录产物概览："
 ls -lh "${SCRIPT_DIR}/publish"
 echo "============================================================"
