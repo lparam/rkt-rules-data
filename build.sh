@@ -32,6 +32,7 @@ curl -fsSL --retry 3 --retry-delay 2 -o geosite.dat https://raw.githubuserconten
 
 curl -fsSL --retry 3 --retry-delay 2 -o Country-lite.mmdb https://raw.githubusercontent.com/xishang0128/geoip/release/Country.mmdb
 curl -fsSL --retry 3 --retry-delay 2 -o geoip-lite.dat https://github.com/xishang0128/geoip/raw/release/geoip.dat
+curl -fsSL --retry 3 --retry-delay 2 -o geoip.metadb https://github.com/MetaCubeX/meta-rules-dat/raw/release/geoip.metadb
 
 curl -fsSL --retry 3 --retry-delay 2 -o direct-list.txt https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/direct-list.txt
 curl -fsSL --retry 3 --retry-delay 2 -o proxy-list.txt https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/proxy-list.txt
@@ -52,11 +53,12 @@ cd "${SCRIPT_DIR}"
 echo "✅ 规则集编译完成"
 
 # 5. 校验与审查产物
-echo "🔍 正在抽样审查编译产物..."
+echo "🔍 正在抽样审查编译产物与复合数据库..."
 "${COMPILER}" inspect dist/geosite/geosite-cn.rrs
 "${COMPILER}" inspect dist/geosite/geosite-openai.rrs
 "${COMPILER}" inspect dist/geoip/geoip-cn.rrs
 "${COMPILER}" inspect dist/asn/AS13335.rrs
+"${COMPILER}" inspect raw/geoip.metadb
 
 # 6. 规则命中测试
 echo "🧪 正在执行规则匹配测试..."
@@ -83,6 +85,8 @@ cp raw/GeoLite2-ASN.mmdb publish/GeoLite2-ASN.mmdb
 cp raw/geoip.dat publish/geoip.dat
 cp raw/geoip-lite.dat publish/geoip-lite.dat
 cp raw/geosite.dat publish/geosite.dat
+cp raw/geoip.metadb publish/geoip.metadb
+cp raw/geoip.metadb publish/geoip.rdb
 cp dist/*.rrs publish/
 
 # 生成校验和

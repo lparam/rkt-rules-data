@@ -27,7 +27,7 @@ jobs:
       - name: Build rkt-rules-compiler
         run: |
           git clone --depth 1 https://github.com/${{ github.repository_owner }}/rkt.git /tmp/rkt
-          cargo build --release --manifest-path /tmp/rkt/Cargo.toml --bin rkt-rules-compiler
+          cargo build --release --manifest-path /tmp/rkt/Cargo.toml -p rkt-rules --bin rkt-rules-compiler
           cp /tmp/rkt/target/release/rkt-rules-compiler /usr/local/bin/
 
       - name: Download Upstream Rules Data
@@ -38,6 +38,7 @@ jobs:
           curl -fsSL --retry 3 --retry-delay 2 -o Country.mmdb https://raw.githubusercontent.com/Loyalsoldier/geoip/release/Country.mmdb
           curl -fsSL --retry 3 --retry-delay 2 -o geoip.dat https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geoip.dat
           curl -fsSL --retry 3 --retry-delay 2 -o geosite.dat https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geosite.dat
+          curl -fsSL --retry 3 --retry-delay 2 -o geoip.metadb https://github.com/MetaCubeX/meta-rules-dat/raw/release/geoip.metadb
           
           # 2. 软路由/低内存专用精简数据 (Lite)
           curl -fsSL --retry 3 --retry-delay 2 -o Country-lite.mmdb https://raw.githubusercontent.com/xishang0128/geoip/release/Country.mmdb
@@ -73,13 +74,15 @@ jobs:
           cd /tmp/lite_rrs && 7z a -mx=9 /tmp/BundleRRS-lite.7z ./*.rrs && cd -
           mv /tmp/BundleRRS-lite.7z publish/
           
-          # 3. 归档单体大数据库与三件套
+          # 3. 归档单体大数据库与复合库
           cp raw/Country.mmdb publish/country.mmdb
           cp raw/Country-lite.mmdb publish/country-lite.mmdb
           cp raw/GeoLite2-ASN.mmdb publish/GeoLite2-ASN.mmdb
           cp raw/geoip.dat publish/geoip.dat
           cp raw/geoip-lite.dat publish/geoip-lite.dat
           cp raw/geosite.dat publish/geosite.dat
+          cp raw/geoip.metadb publish/geoip.metadb
+          cp raw/geoip.metadb publish/geoip.rdb
           cp dist/*.rrs publish/
           
           # 4. 生成校验和

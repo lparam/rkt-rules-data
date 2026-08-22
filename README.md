@@ -7,7 +7,8 @@
 ## 🌟 核心特性
 
 - **原生二进制 `.rrs` 极速加载**：基于压缩前缀树（Succinct Trie）与紧凑网段编码，微秒级匹配，内存占用对比传统文本降低 90%+。
-- **每日自动构建**：每日北京时间凌晨 04:00 自动同步上游权威数据源（`Loyalsoldier`、`xishang0128`、`P3TERX` 等）并编译最新规则。
+- **复合数据库 `geoip.rdb` / `geoip.metadb` 原生支持**：单个数据库同时包含全球 ISO 国家 IP、8 万个 ASN 自治域与 Telegram/Private 专有网段。
+- **每日自动构建**：每日北京时间凌晨 04:00 自动同步上游权威数据源（`Loyalsoldier`、`MetaCubeX`、`xishang0128`、`P3TERX` 等）并编译最新规则。
 - **全球 CDN 按需加速**：平铺数万个微型 `.rrs` 文件（通常 1~10 KB），客户端冷启动秒级拉取。
 - **双梯队产物**：同时提供面向 PC/服务器的 **Full 全量产物**，以及专为 OpenWrt 软路由/嵌入式设备设计的 **Lite 精简产物**。
 
@@ -27,6 +28,7 @@
 │   └── ... (约 3,000+ 域名分类规则集)
 ├── geoip/
 │   ├── geoip-cn.rrs
+│   ├── geoip-telegram.rrs
 │   ├── geoip-private.rrs
 │   └── ... (200+ 国家与区域 IP 规则集)
 └── asn/
@@ -47,15 +49,16 @@ https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geoip/geoip-cn.rrs
 
 | 产物名称 | 说明 | 适用场景 | 预估体积 |
 | :--- | :--- | :--- | :--- |
-| `BundleRRS.7z` | 全量 8.4 万个 `.rrs` 规则集归档总包 | PC / 桌面端离线部署 | ~6 MB |
-| `BundleRRS-lite.7z` | 200+ 高频核心 `.rrs` 归档精简包 | OpenWrt 软路由首选 | ~300 KB |
-| `direct-list.rrs` | 国内直连白名单 | 开箱即用三件套 | ~500 KB |
-| `proxy-list.rrs` | 常用代理名单 | 开箱即用三件套 | ~13 KB |
-| `reject-list.rrs` | 广告拦截名单 | 开箱即用三件套 | ~8 KB |
-| `country-lite.mmdb` | MaxMind 精简国家库 | 软路由低内存首选 | ~390 KB |
-| `country.mmdb` | MaxMind 全量国家库 | 服务器 / PC 首选 | ~7.8 MB |
+| `geoip.rdb` / `geoip.metadb` | **复合三合一数据库**（国家 + ASN + 专有标签） | 离线单文件全量首选 | ~12 MB |
+| `BundleRRS.7z` | 全量 8.4 万个 `.rrs` 规则集归档总包 | PC / 桌面端离线部署 | ~9.2 MB |
+| `BundleRRS-lite.7z` | 200+ 高频核心 `.rrs` 归档精简包 | OpenWrt 软路由首选 | ~2.6 MB |
+| `direct-list.rrs` | 国内直连白名单 | 开箱即用三件套 | ~444 KB |
+| `proxy-list.rrs` | 常用代理名单 | 开箱即用三件套 | ~176 KB |
+| `reject-list.rrs` | 广告拦截名单 | 开箱即用三件套 | ~1.6 MB |
+| `country-lite.mmdb` | MaxMind 精简国家库 | 软路由低内存首选 | ~385 KB |
+| `country.mmdb` | MaxMind 全量国家库 | 服务器 / PC 首选 | ~7.6 MB |
 | `GeoLite2-ASN.mmdb`| MaxMind 全量 ASN 自治域库 | 服务器 / PC 首选 | ~12 MB |
-| `geosite.dat` / `geoip.dat` | V2Ray 全量兼容库 | 兼容传统客户端 | ~4.2 MB / ~17 MB |
+| `geosite.dat` / `geoip.dat` | V2Ray 全量兼容库 | 兼容传统客户端 | ~11 MB / ~17 MB |
 
 ---
 
@@ -72,12 +75,6 @@ rule-providers:
     url: "https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geosite/geosite-cn.rrs"
     interval: 86400
 
-  geosite-openai:
-    type: http
-    format: rrs
-    url: "https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geosite/geosite-openai.rrs"
-    interval: 86400
-
   geoip-cn:
     type: http
     format: rrs
@@ -85,11 +82,10 @@ rule-providers:
     interval: 86400
 
 rules:
-  - RULE-SET,geosite-openai,PROXY
   - RULE-SET,geosite-cn,DIRECT
   - RULE-SET,geoip-cn,DIRECT
   - MATCH,PROXY
 ```
 
 ### 2. 本地离线放置
-将 `BundleRRS.7z` 或单个 `.rrs` 文件解压至 `rulesets/` 目录即可，`rkt` 与 `rkt-desktop` 启动时会自动扫描并关联。
+将 `geoip.rdb`（或 `geoip.metadb`）、`BundleRRS.7z` 解压至 `rulesets/` 目录即可，`rkt` 启动时会自动识别复合数据库并同时激活 `GEOIP` 与 `IP-ASN` 匹配。
