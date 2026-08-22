@@ -1,0 +1,9 @@
+raw/
+dist/
+publish/
+target/
+*.rrs
+*.mmdb
+*.dat
+*.7z
+*.txt
