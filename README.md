@@ -36,6 +36,9 @@
 └── asn/
     ├── AS13335.rrs                        # Cloudflare 自治域 (9.5 KB)
     ├── AS15169.rrs                        # Google 自治域 (25 KB)
+    ├── AS4134.rrs                         # 中国电信 163 骨干网 (5.6 KB)
+    ├── AS4837.rrs                         # 中国联通 169 骨干网 (4.8 KB)
+    ├── AS9808.rrs                         # 中国移动 CMNET 骨干网 (3.2 KB)
     └── ... (Top 热门自治域)
 ```
 
@@ -55,6 +58,13 @@ https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geoip/geoip-cn.rrs
 https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geoip/geoip-telegram.rrs
 https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geoip/geoip-cloudflare.rrs
 https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geoip/geoip-private.rrs
+
+# 常用 ASN 自治域规则 (ASN)
+https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/asn/AS13335.rrs
+https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/asn/AS15169.rrs
+https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/asn/AS4134.rrs
+https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/asn/AS4837.rrs
+https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/asn/AS9808.rrs
 ```
 
 ---
@@ -86,15 +96,59 @@ https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geoip/geoip-private.rr
 
 ---
 
-### 💡 `geoip.rdb` (Full) vs `geoip-lite.rdb` (Lite) 深度对比
+## 🌐 ASN（自治系统）规则使用指南
 
-| 特性 / 维度 | 全量复合库 `geoip.rdb` (~8.4 MB) | 精简复合库 `geoip-lite.rdb` (~386 KB) |
+ASN（Autonomous System Number）是互联网底层 BGP 路由的自治域编号。通过 ASN 进行分流比单纯的域名规则更底层、更精确，能够直接识别目标 IP 属于哪家运营商或云服务巨头。
+
+### 1. 常见热门 ASN 编号速查表
+
+| ASN 编号 | 所属机构 / 服务商 | 常见分流策略 |
 | :--- | :--- | :--- |
-| **国家 IP 支持** | 全球 260+ 国家与地区 (包含全部长尾国家) | 核心国家与地区 (CN, US, HK, JP, TW, SG, GB, DE 等) |
-| **专有服务商标签** | ✅ 包含 `telegram`, `cloudflare`, `google`, `facebook`, `private` 等 | ✅ 包含 `telegram`, `cloudflare`, `google`, `facebook`, `private` 等 |
-| **ASN 匹配支持** | ✅ 原生内置全球 **8.4 万个所有 ASN** (如 `IP-ASN,4134`, `IP-ASN,13335`) | ✅ 在 `rkt` 中自动映射支持 **Top 主流大厂 ASN** (如 `IP-ASN,13335` Cloudflare、`IP-ASN,15169` Google、`IP-ASN,62041` Telegram 等) |
-| **内存开销** | 约 10~15 MB 常驻内存 | **仅 ~500 KB 极低内存** |
-| **最佳推荐设备** | PC 桌面端、云服务器、高性能网关 | OpenWrt 软路由、嵌入式开发板、低闪存/低内存路由器 |
+| **AS4134** | **中国电信** (Chinanet 163 骨干网) | `DIRECT` 国内直连 |
+| **AS4837** | **中国联通** (China169 骨干网) | `DIRECT` 国内直连 |
+| **AS9808** | **中国移动** (CMNET 骨干网) | `DIRECT` 国内直连 |
+| **AS37963** | **阿里云** (Alibaba Cloud) | `DIRECT` 国内云直连 |
+| **AS45090** | **腾讯云** (Tencent Cloud) | `DIRECT` 国内云直连 |
+| **AS13335** | **Cloudflare** (全球 CDN / 边缘节点) | `CF-Proxy` 专属代理/直连 |
+| **AS15169** | **Google** (Alphabet 全系 IP) | `Google-Proxy` 专线代理 |
+| **AS16509** | **Amazon AWS** (境外云主机/流媒体) | `Proxy` 代理 |
+| **AS8075** | **Microsoft** (Azure / Office / Bing) | `Proxy` / `DIRECT` |
+| **AS62041** / **AS44907** | **Telegram** (全球数据中心) | `TG-Proxy` 专线代理 |
+| **AS32934** | **Meta** (Facebook / Instagram) | `Proxy` 代理 |
+
+---
+
+### 2. 在 `rkt` 中使用 ASN 的两种方式
+
+#### 方式 A：使用 `IP-ASN` 规则（推荐，依赖 `geoip.rdb` 或 `geoip-lite.rdb`）
+直接通过 ASN 编号进行动态匹配，语法与 Clash / sing-box 一致：
+
+```conf
+# 匹配国内运营商骨干网直连
+IP-ASN,4134,DIRECT
+IP-ASN,4837,DIRECT
+IP-ASN,9808,DIRECT
+
+# 匹配海外大厂与 CDN 走指定代理策略组
+IP-ASN,13335,CF-Proxy
+IP-ASN,15169,Google-Proxy
+IP-ASN,62041,TG-Proxy
+```
+
+#### 方式 B：使用 `RULE-SET` 单体规则集（极致性能，依赖 `asn/*.rrs`）
+如果不想加载大型数据库，只需按需拉取单个 ASN 规则集（每个仅几 KB，内存占用 < 20 KB，匹配速度 < 50 纳秒）：
+
+```yaml
+rule-providers:
+  as-cloudflare:
+    type: http
+    format: rrs
+    url: "https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/asn/AS13335.rrs"
+    interval: 86400
+
+rules:
+  - RULE-SET,as-cloudflare,CF-Proxy
+```
 
 ---
 
@@ -137,6 +191,7 @@ rules:
   - RULE-SET,geosite-openai,OpenAI-Proxy
   - RULE-SET,geosite-cn,DIRECT
   - RULE-SET,geoip-cn,DIRECT
+  - IP-ASN,13335,CF-Proxy
   - GEOIP,telegram,TG-Proxy
   - GEOIP,cloudflare,DIRECT
   - GEOIP,private,DIRECT
@@ -157,6 +212,7 @@ rules:
 ```bash
 # 1. 审查任意 .rrs 规则集或 .rdb 复合数据库
 rkt-rules-compiler inspect dist/geosite/geosite-cn.rrs
+rkt-rules-compiler inspect dist/asn/AS13335.rrs
 rkt-rules-compiler inspect publish/geoip.rdb
 rkt-rules-compiler inspect publish/geoip-lite.rdb
 
