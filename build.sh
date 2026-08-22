@@ -92,32 +92,41 @@ cp raw/geoip-lite.metadb publish/geoip-lite.rdb
 cd publish
 sha256sum * > sha256sums.txt
 
-# 8. 自动同步交付物到本地 rrs 与 release 分支
-echo "🌿 正在将生成交付物同步至本地 rrs 与 release 分支..."
+# 8. 自动同步交付物到本地 rrs 与 release 分支 (Orphan 单 Commit 覆盖，根绝 Git 历史体积膨胀)
+echo "🌿 正在将生成交付物同步至本地 rrs 与 release 分支 (Orphan 单 Commit 覆盖模式)..."
 rm -rf /tmp/rkt_data_dist /tmp/rkt_data_pub
 mkdir -p /tmp/rkt_data_dist /tmp/rkt_data_pub
 cp -r "${SCRIPT_DIR}/dist"/* /tmp/rkt_data_dist/
 cp -r "${SCRIPT_DIR}/publish"/* /tmp/rkt_data_pub/
 
-git -C "${SCRIPT_DIR}" checkout rrs
+# 同步 rrs 分支 (无历史父提交，永远单 Commit)
+git -C "${SCRIPT_DIR}" checkout --orphan rrs-temp >/dev/null 2>&1
 git -C "${SCRIPT_DIR}" rm -rf . >/dev/null 2>&1 || true
 cp -r /tmp/rkt_data_dist/* "${SCRIPT_DIR}/"
 git -C "${SCRIPT_DIR}" checkout master -- README.md >/dev/null 2>&1 || true
 git -C "${SCRIPT_DIR}" add .
-git -C "${SCRIPT_DIR}" commit -m "Auto-compiled rulesets: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" || true
+git -C "${SCRIPT_DIR}" commit -m "Auto-compiled rulesets: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >/dev/null 2>&1
+git -C "${SCRIPT_DIR}" branch -D rrs >/dev/null 2>&1 || true
+git -C "${SCRIPT_DIR}" branch -m rrs
 
-git -C "${SCRIPT_DIR}" checkout release
+# 同步 release 分支 (无历史父提交，永远单 Commit)
+git -C "${SCRIPT_DIR}" checkout --orphan release-temp >/dev/null 2>&1
 git -C "${SCRIPT_DIR}" rm -rf . >/dev/null 2>&1 || true
 cp -r /tmp/rkt_data_pub/* "${SCRIPT_DIR}/"
 git -C "${SCRIPT_DIR}" checkout master -- README.md >/dev/null 2>&1 || true
 git -C "${SCRIPT_DIR}" add .
-git -C "${SCRIPT_DIR}" commit -m "Release assets: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" || true
+git -C "${SCRIPT_DIR}" commit -m "Release assets: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >/dev/null 2>&1
+git -C "${SCRIPT_DIR}" branch -D release >/dev/null 2>&1 || true
+git -C "${SCRIPT_DIR}" branch -m release
 
 git -C "${SCRIPT_DIR}" checkout -f master
 rm -rf /tmp/rkt_data_dist /tmp/rkt_data_pub
 
+# 自动修剪悬空历史对象，保持 .git 极度轻巧
+git -C "${SCRIPT_DIR}" gc --prune=now --quiet 2>/dev/null || true
+
 echo "============================================================"
-echo "🎉 全流程构建成功！rrs 与 release 分支已自动更新就绪！"
+echo "🎉 全流程构建成功！rrs 与 release 交付分支已由单 Commit 重置就绪！"
 echo "📊 publish/ 目录产物概览："
 ls -lh "${SCRIPT_DIR}/publish"
 echo "============================================================"
