@@ -128,5 +128,6 @@ git -C "${SCRIPT_DIR}" gc --prune=now --quiet 2>/dev/null || true
 echo "============================================================"
 echo "🎉 全流程构建成功！rrs 与 release 交付分支已由单 Commit 重置就绪！"
 echo "📊 publish/ 目录产物概览："
-ls -lh "${SCRIPT_DIR}/publish"
+echo "✨ rrs 分支：仅含纯净 asn/ geoip/ geosite/ 二进制规则集"
+echo "📦 release 分支：包含全量 Bundle 压缩包、数据库与校验文件"
 echo "============================================================"
