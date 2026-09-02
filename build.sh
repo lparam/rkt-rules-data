@@ -83,9 +83,7 @@ cp raw/GeoLite2-ASN.mmdb publish/GeoLite2-ASN.mmdb
 cp raw/geoip.dat publish/geoip.dat
 cp raw/geoip-lite.dat publish/geoip-lite.dat
 cp raw/geosite.dat publish/geosite.dat
-cp raw/geoip.metadb publish/geoip.metadb
 cp raw/geoip.metadb publish/geoip.rdb
-cp raw/geoip-lite.metadb publish/geoip-lite.metadb
 cp raw/geoip-lite.metadb publish/geoip-lite.rdb
 
 # 生成校验和
