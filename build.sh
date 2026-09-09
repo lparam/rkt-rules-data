@@ -136,7 +136,7 @@ git -C "${SCRIPT_DIR}" checkout --orphan rrs-temp >/dev/null 2>&1
 find "${SCRIPT_DIR}" -mindepth 1 -maxdepth 1 ! -name '.git' ! -name 'raw' -exec rm -rf {} +
 cp -r /tmp/rkt_data_dist/* "${SCRIPT_DIR}/"
 git -C "${SCRIPT_DIR}" checkout master -- README.md .gitignore >/dev/null 2>&1 || true
-git -C "${SCRIPT_DIR}" add asn geosite geoip README.md .gitignore
+git -C "${SCRIPT_DIR}" add -f asn geosite geoip README.md
 git -C "${SCRIPT_DIR}" commit -m "Auto-compiled rulesets: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >/dev/null 2>&1
 git -C "${SCRIPT_DIR}" branch -D rrs >/dev/null 2>&1 || true
 git -C "${SCRIPT_DIR}" branch -m rrs
@@ -146,7 +146,7 @@ git -C "${SCRIPT_DIR}" checkout --orphan release-temp >/dev/null 2>&1
 find "${SCRIPT_DIR}" -mindepth 1 -maxdepth 1 ! -name '.git' ! -name 'raw' -exec rm -rf {} +
 cp -r /tmp/rkt_data_pub/* "${SCRIPT_DIR}/"
 git -C "${SCRIPT_DIR}" checkout master -- README.md .gitignore >/dev/null 2>&1 || true
-git -C "${SCRIPT_DIR}" add BundleRRS.7z BundleRRS-lite.7z geoip.rdb geoip-lite.rdb sha256sums.txt README.md .gitignore
+git -C "${SCRIPT_DIR}" add -f BundleRRS.7z BundleRRS-lite.7z geoip.rdb geoip-lite.rdb sha256sums.txt README.md
 git -C "${SCRIPT_DIR}" commit -m "Release assets: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >/dev/null 2>&1
 git -C "${SCRIPT_DIR}" branch -D release >/dev/null 2>&1 || true
 git -C "${SCRIPT_DIR}" branch -m release
