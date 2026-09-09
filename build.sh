@@ -25,16 +25,13 @@ mkdir -p "${SCRIPT_DIR}/raw" "${SCRIPT_DIR}/dist/geosite" "${SCRIPT_DIR}/dist/ge
 echo "🌐 正在下载上游清洗规则数据源 (带重试)..."
 cd "${SCRIPT_DIR}/raw"
 
-# 全量数据
+# 编译原材料全量数据
 curl -fsSL --retry 3 --retry-delay 2 -o GeoLite2-ASN.mmdb https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-ASN.mmdb
-curl -fsSL --retry 3 --retry-delay 2 -o Country.mmdb https://raw.githubusercontent.com/Loyalsoldier/geoip/release/Country.mmdb
 curl -fsSL --retry 3 --retry-delay 2 -o geoip.dat https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geoip.dat
 curl -fsSL --retry 3 --retry-delay 2 -o geosite.dat https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geosite.dat
 curl -fsSL --retry 3 --retry-delay 2 -o geoip.metadb https://github.com/MetaCubeX/meta-rules-dat/raw/release/geoip.metadb
 
-# 精简数据 (Lite)
-curl -fsSL --retry 3 --retry-delay 2 -o Country-lite.mmdb https://raw.githubusercontent.com/xishang0128/geoip/release/Country.mmdb
-curl -fsSL --retry 3 --retry-delay 2 -o geoip-lite.dat https://github.com/xishang0128/geoip/raw/release/geoip.dat
+# 软路由精简数据库 (Lite)
 curl -fsSL --retry 3 --retry-delay 2 -o geoip-lite.metadb https://github.com/MetaCubeX/meta-rules-dat/raw/release/geoip-lite.metadb
 echo "✅ 上游数据下载完毕"
 
@@ -75,14 +72,8 @@ cp geosite/geosite-cn.rrs geosite/geosite-openai.rrs geosite/geosite-google.rrs 
 cd /tmp/lite_rrs && 7z a -mx=9 "${SCRIPT_DIR}/publish/BundleRRS-lite.7z" ./*.rrs && cd -
 rm -rf /tmp/lite_rrs
 
-# 复制常用数据库与单文件
+# 复制原生复合数据库 (Full & Lite)
 cd "${SCRIPT_DIR}"
-cp raw/Country.mmdb publish/country.mmdb
-cp raw/Country-lite.mmdb publish/country-lite.mmdb
-cp raw/GeoLite2-ASN.mmdb publish/GeoLite2-ASN.mmdb
-cp raw/geoip.dat publish/geoip.dat
-cp raw/geoip-lite.dat publish/geoip-lite.dat
-cp raw/geosite.dat publish/geosite.dat
 cp raw/geoip.metadb publish/geoip.rdb
 cp raw/geoip-lite.metadb publish/geoip-lite.rdb
 

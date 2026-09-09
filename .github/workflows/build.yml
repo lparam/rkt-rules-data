@@ -33,16 +33,13 @@ jobs:
       - name: Download Upstream Rules Data
         run: |
           mkdir -p raw && cd raw
-          # 1. 权威全量数据源 (带 3 次重试容错)
+          # 1. 编译原材料数据源 (带 3 次重试容错)
           curl -fsSL --retry 3 --retry-delay 2 -o GeoLite2-ASN.mmdb https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-ASN.mmdb
-          curl -fsSL --retry 3 --retry-delay 2 -o Country.mmdb https://raw.githubusercontent.com/Loyalsoldier/geoip/release/Country.mmdb
           curl -fsSL --retry 3 --retry-delay 2 -o geoip.dat https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geoip.dat
           curl -fsSL --retry 3 --retry-delay 2 -o geosite.dat https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geosite.dat
           curl -fsSL --retry 3 --retry-delay 2 -o geoip.metadb https://github.com/MetaCubeX/meta-rules-dat/raw/release/geoip.metadb
           
-          # 2. 软路由/低内存专用精简数据 (Lite)
-          curl -fsSL --retry 3 --retry-delay 2 -o Country-lite.mmdb https://raw.githubusercontent.com/xishang0128/geoip/release/Country.mmdb
-          curl -fsSL --retry 3 --retry-delay 2 -o geoip-lite.dat https://github.com/xishang0128/geoip/raw/release/geoip.dat
+          # 2. 软路由/低内存专用精简数据库 (Lite)
           curl -fsSL --retry 3 --retry-delay 2 -o geoip-lite.metadb https://github.com/MetaCubeX/meta-rules-dat/raw/release/geoip-lite.metadb
 
       - name: Compile to Native .rrs Rulesets
@@ -65,13 +62,7 @@ jobs:
           cd /tmp/lite_rrs && 7z a -mx=9 /tmp/BundleRRS-lite.7z ./*.rrs && cd -
           mv /tmp/BundleRRS-lite.7z publish/
           
-          # 3. 归档单体大数据库与复合库 (Full & Lite)
-          cp raw/Country.mmdb publish/country.mmdb
-          cp raw/Country-lite.mmdb publish/country-lite.mmdb
-          cp raw/GeoLite2-ASN.mmdb publish/GeoLite2-ASN.mmdb
-          cp raw/geoip.dat publish/geoip.dat
-          cp raw/geoip-lite.dat publish/geoip-lite.dat
-          cp raw/geosite.dat publish/geosite.dat
+          # 3. 归档原生复合数据库 (Full & Lite)
           cp raw/geoip.metadb publish/geoip.rdb
           cp raw/geoip-lite.metadb publish/geoip-lite.rdb
           
