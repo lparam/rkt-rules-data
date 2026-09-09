@@ -43,28 +43,28 @@
 ```
 
 #### 🌐 常用 CDN 直连速查表 (jsDelivr / Fastly)
-> 💡 请将 `<owner>` 替换为您的 GitHub 仓库所有者用户名。
+> 💡 请将 `lparam` 替换为您的 GitHub 仓库所有者用户名。
 
 ```text
 # 常用域名规则 (Geosite)
-https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geosite/geosite-cn.rrs
-https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geosite/geosite-openai.rrs
-https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geosite/geosite-google.rrs
-https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geosite/geosite-category-ads-all.rrs
-https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geosite/geosite-geolocation-!cn.rrs
+https://fastly.jsdelivr.net/gh/lparam/rkt-rules-data@rrs/geosite/geosite-cn.rrs
+https://fastly.jsdelivr.net/gh/lparam/rkt-rules-data@rrs/geosite/geosite-openai.rrs
+https://fastly.jsdelivr.net/gh/lparam/rkt-rules-data@rrs/geosite/geosite-google.rrs
+https://fastly.jsdelivr.net/gh/lparam/rkt-rules-data@rrs/geosite/geosite-category-ads-all.rrs
+https://fastly.jsdelivr.net/gh/lparam/rkt-rules-data@rrs/geosite/geosite-geolocation-!cn.rrs
 
 # 常用 IP 网段规则 (GeoIP)
-https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geoip/geoip-cn.rrs
-https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geoip/geoip-telegram.rrs
-https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geoip/geoip-cloudflare.rrs
-https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geoip/geoip-private.rrs
+https://fastly.jsdelivr.net/gh/lparam/rkt-rules-data@rrs/geoip/geoip-cn.rrs
+https://fastly.jsdelivr.net/gh/lparam/rkt-rules-data@rrs/geoip/geoip-telegram.rrs
+https://fastly.jsdelivr.net/gh/lparam/rkt-rules-data@rrs/geoip/geoip-cloudflare.rrs
+https://fastly.jsdelivr.net/gh/lparam/rkt-rules-data@rrs/geoip/geoip-private.rrs
 
 # 常用 ASN 自治域规则 (ASN)
-https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/asn/AS13335.rrs
-https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/asn/AS15169.rrs
-https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/asn/AS4134.rrs
-https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/asn/AS4837.rrs
-https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/asn/AS9808.rrs
+https://fastly.jsdelivr.net/gh/lparam/rkt-rules-data@rrs/asn/AS13335.rrs
+https://fastly.jsdelivr.net/gh/lparam/rkt-rules-data@rrs/asn/AS15169.rrs
+https://fastly.jsdelivr.net/gh/lparam/rkt-rules-data@rrs/asn/AS4134.rrs
+https://fastly.jsdelivr.net/gh/lparam/rkt-rules-data@rrs/asn/AS4837.rrs
+https://fastly.jsdelivr.net/gh/lparam/rkt-rules-data@rrs/asn/AS9808.rrs
 ```
 
 ---
@@ -129,7 +129,7 @@ rule-providers:
   as-cloudflare:
     type: http
     format: rrs
-    url: "https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/asn/AS13335.rrs"
+    url: "https://fastly.jsdelivr.net/gh/lparam/rkt-rules-data@rrs/asn/AS13335.rrs"
     interval: 86400
 
 rules:
@@ -149,27 +149,27 @@ rule-providers:
   geosite-ads:
     type: http
     format: rrs
-    url: "https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geosite/geosite-category-ads-all.rrs"
+    url: "https://fastly.jsdelivr.net/gh/lparam/rkt-rules-data@rrs/geosite/geosite-category-ads-all.rrs"
     interval: 86400
 
   # OpenAI 专属分流
   geosite-openai:
     type: http
     format: rrs
-    url: "https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geosite/geosite-openai.rrs"
+    url: "https://fastly.jsdelivr.net/gh/lparam/rkt-rules-data@rrs/geosite/geosite-openai.rrs"
     interval: 86400
 
   # 国内直连域名与 IP
   geosite-cn:
     type: http
     format: rrs
-    url: "https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geosite/geosite-cn.rrs"
+    url: "https://fastly.jsdelivr.net/gh/lparam/rkt-rules-data@rrs/geosite/geosite-cn.rrs"
     interval: 86400
 
   geoip-cn:
     type: http
     format: rrs
-    url: "https://fastly.jsdelivr.net/gh/<owner>/rkt-rules-data@rrs/geoip/geoip-cn.rrs"
+    url: "https://fastly.jsdelivr.net/gh/lparam/rkt-rules-data@rrs/geoip/geoip-cn.rrs"
     interval: 86400
 
 rules:

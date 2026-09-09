@@ -8,14 +8,20 @@ echo "============================================================"
 echo "🚀 开始本地构建与测试 rkt-rules-data 流水线"
 echo "============================================================"
 
-# 1. 编译本地 rkt-rules-compiler 二进制
-echo "📦 正在编译 rkt-rules-compiler..."
-cargo build --release --manifest-path "${WORKSPACE_ROOT}/Cargo.toml" -p rkt-rules --bin rkt-rules-compiler
-COMPILER="${WORKSPACE_ROOT}/target/release/rkt-rules-compiler"
+# 1. 查找或编译 rkt-rules-compiler 二进制
+COMPILER="${SCRIPT_DIR}/tools/bin/rkt-rules-compiler"
 if [ ! -f "${COMPILER}" ]; then
-    echo "❌ 编译器构建失败，未找到 ${COMPILER}"
-    exit 1
+    if [ -f "${WORKSPACE_ROOT}/Cargo.toml" ]; then
+        echo "📦 正在从本地 rkt 源码编译 rkt-rules-compiler..."
+        cargo build --release --manifest-path "${WORKSPACE_ROOT}/Cargo.toml" -p rkt-rules --bin rkt-rules-compiler
+        mkdir -p "${SCRIPT_DIR}/tools/bin"
+        cp "${WORKSPACE_ROOT}/target/release/rkt-rules-compiler" "${COMPILER}"
+    else
+        echo "❌ 未找到 rkt-rules-compiler 二进制 (${COMPILER})，且未检测到本地 rkt 源码"
+        exit 1
+    fi
 fi
+chmod +x "${COMPILER}"
 echo "✅ 编译器就绪: ${COMPILER}"
 
 # 2. 准备目录

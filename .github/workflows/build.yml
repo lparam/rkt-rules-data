@@ -16,9 +16,6 @@ jobs:
       - name: Checkout Master
         uses: actions/checkout@v4
 
-      - name: Setup Rust & Dependencies
-        uses: dtolnay/rust-toolchain@stable
-
       - name: Setup Go Toolchain
         uses: actions/setup-go@v5
         with:
@@ -31,12 +28,8 @@ jobs:
           sudo apt-get install -y p7zip-full curl
           go install -trimpath -ldflags="-s -w" github.com/metacubex/geo/cmd/geo@master
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-
-      - name: Build rkt-rules-compiler
-        run: |
-          git clone --depth 1 https://github.com/${{ github.repository_owner }}/rkt.git /tmp/rkt
-          cargo build --release --manifest-path /tmp/rkt/Cargo.toml -p rkt-rules --bin rkt-rules-compiler
-          cp /tmp/rkt/target/release/rkt-rules-compiler /usr/local/bin/
+          sudo cp tools/bin/rkt-rules-compiler /usr/local/bin/
+          sudo chmod +x /usr/local/bin/rkt-rules-compiler
 
       - name: Download Upstream Rules Data
         run: |
@@ -83,6 +76,7 @@ jobs:
 
       - name: Deploy to rrs branch (CDN layer)
         run: |
+          cp README.md dist/
           cd dist
           git init
           git config user.name "github-actions[bot]"
@@ -94,6 +88,7 @@ jobs:
 
       - name: Deploy to release branch (Asset layer)
         run: |
+          cp README.md publish/
           cd publish
           git init
           git config user.name "github-actions[bot]"
