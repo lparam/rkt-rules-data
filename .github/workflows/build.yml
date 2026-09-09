@@ -3,7 +3,7 @@ name: Build and Publish Rulesets
 on:
   schedule:
     - cron: '0 20 * * *' # 每日北京时间凌晨 04:00 自动触发
-  workflow_dispatch:      # 支持手动一键触发
+  workflow_dispatch:      # 支持手动一键测试触发
 
 jobs:
   build:
@@ -33,7 +33,8 @@ jobs:
 
       - name: Download Upstream Rules Data
         run: |
-          mkdir -p raw && cd raw
+          mkdir -p raw
+          cd raw
           # 1. 编译原材料全量数据源 (直接对接 MaxMind/Loyalsoldier 一手源，带 3 次重试容错)
           curl -fsSL --retry 3 --retry-delay 2 -o Country.mmdb https://github.com/Dreamacro/maxmind-geoip/raw/release/Country.mmdb
           curl -fsSL --retry 3 --retry-delay 2 -o GeoLite2-ASN.mmdb https://raw.githubusercontent.com/xishang0128/geoip/release/GeoLite2-ASN.mmdb
@@ -65,14 +66,15 @@ jobs:
           # 1. 全量 7z 总包 (高压缩比，包含所有 .rrs)
           cd dist && 7z a -mx=9 ../publish/BundleRRS.7z ./*/*.rrs && cd ..
           
-          # 2. 嵌入式软路由专用精简核心总包 (BundleRRS-lite.7z, ~300KB)
+          # 2. 嵌入式软路由专用精简核心总包 (BundleRRS-lite.7z, ~2.2MB)
           mkdir -p /tmp/lite_rrs
           cp dist/geosite/geosite-cn.rrs dist/geosite/geosite-openai.rrs dist/geosite/geosite-google.rrs dist/geosite/geosite-category-ads-all.rrs dist/geoip/geoip-cn.rrs dist/geoip/geoip-private.rrs /tmp/lite_rrs/ 2>/dev/null || true
           cd /tmp/lite_rrs && 7z a -mx=9 /tmp/BundleRRS-lite.7z ./*.rrs && cd -
           mv /tmp/BundleRRS-lite.7z publish/
           
           # 3. 生成校验和
-          cd publish && sha256sum * > sha256sums.txt
+          cd publish
+          sha256sum BundleRRS.7z BundleRRS-lite.7z geoip.rdb geoip-lite.rdb > sha256sums.txt
 
       - name: Deploy to rrs branch (CDN layer)
         run: |
@@ -80,11 +82,11 @@ jobs:
           cd dist
           git init
           git config user.name "github-actions[bot]"
-          git config user.email "actions@github.com"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b rrs
-          git add .
+          git add -A
           git commit -m "Auto-compiled rulesets: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
-          git push -f "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" rrs
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" rrs
 
       - name: Deploy to release branch (Asset layer)
         run: |
@@ -92,11 +94,11 @@ jobs:
           cd publish
           git init
           git config user.name "github-actions[bot]"
-          git config user.email "actions@github.com"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b release
-          git add .
+          git add -A
           git commit -m "Release assets: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
-          git push -f "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" release
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" release
 
       - name: Purge jsDelivr CDN Cache
         run: |
