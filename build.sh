@@ -133,9 +133,10 @@ CURRENT_BRANCH="$(git -C "${SCRIPT_DIR}" branch --show-current)"
 
 # 同步 rrs 分支 (无历史父提交，永远单 Commit，仅保留纯净产物)
 git -C "${SCRIPT_DIR}" checkout --orphan rrs-temp >/dev/null 2>&1
+git -C "${SCRIPT_DIR}" rm -rf . >/dev/null 2>&1 || true
 find "${SCRIPT_DIR}" -mindepth 1 -maxdepth 1 ! -name '.git' ! -name 'raw' -exec rm -rf {} +
 cp -r /tmp/rkt_data_dist/* "${SCRIPT_DIR}/"
-git -C "${SCRIPT_DIR}" checkout master -- README.md .gitignore >/dev/null 2>&1 || true
+git -C "${SCRIPT_DIR}" checkout master -- README.md >/dev/null 2>&1 || true
 git -C "${SCRIPT_DIR}" add -f asn geosite geoip README.md
 git -C "${SCRIPT_DIR}" commit -m "Auto-compiled rulesets: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >/dev/null 2>&1
 git -C "${SCRIPT_DIR}" branch -D rrs >/dev/null 2>&1 || true
@@ -143,9 +144,10 @@ git -C "${SCRIPT_DIR}" branch -m rrs
 
 # 同步 release 分支 (无历史父提交，永远单 Commit，仅保留纯净资产包与数据库)
 git -C "${SCRIPT_DIR}" checkout --orphan release-temp >/dev/null 2>&1
+git -C "${SCRIPT_DIR}" rm -rf . >/dev/null 2>&1 || true
 find "${SCRIPT_DIR}" -mindepth 1 -maxdepth 1 ! -name '.git' ! -name 'raw' -exec rm -rf {} +
 cp -r /tmp/rkt_data_pub/* "${SCRIPT_DIR}/"
-git -C "${SCRIPT_DIR}" checkout master -- README.md .gitignore >/dev/null 2>&1 || true
+git -C "${SCRIPT_DIR}" checkout master -- README.md >/dev/null 2>&1 || true
 git -C "${SCRIPT_DIR}" add -f BundleRRS.7z BundleRRS-lite.7z geoip.rdb geoip-lite.rdb sha256sums.txt README.md
 git -C "${SCRIPT_DIR}" commit -m "Release assets: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >/dev/null 2>&1
 git -C "${SCRIPT_DIR}" branch -D release >/dev/null 2>&1 || true
