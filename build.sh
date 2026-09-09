@@ -21,7 +21,7 @@ echo "✅ 编译器就绪: ${COMPILER}"
 # 2. 准备目录
 mkdir -p "${SCRIPT_DIR}/raw" "${SCRIPT_DIR}/dist/geosite" "${SCRIPT_DIR}/dist/geoip" "${SCRIPT_DIR}/dist/asn" "${SCRIPT_DIR}/publish"
 
-# 3. 下载上游数据 (直接对接 Loyalsoldier 与 xishang0128 一手数据源)
+# 3. 下载上游数据 (直接对接 MaxMind, Loyalsoldier 与 xishang0128 一手数据源)
 echo "🌐 正在下载上游清洗规则数据源 (带多级容灾与镜像加速)..."
 cd "${SCRIPT_DIR}/raw"
 
@@ -47,6 +47,10 @@ download_file() {
 }
 
 # 编译原材料全量数据
+download_file "Country.mmdb" \
+    "https://github.com/Dreamacro/maxmind-geoip/raw/release/Country.mmdb" \
+    "https://fastly.jsdelivr.net/gh/Dreamacro/maxmind-geoip@release/Country.mmdb"
+
 download_file "GeoLite2-ASN.mmdb" \
     "https://raw.githubusercontent.com/xishang0128/geoip/release/GeoLite2-ASN.mmdb" \
     "https://fastly.jsdelivr.net/gh/xishang0128/geoip@release/GeoLite2-ASN.mmdb"
@@ -75,15 +79,16 @@ cd "${SCRIPT_DIR}"
 "${COMPILER}" convert asn --input raw/GeoLite2-ASN.mmdb --output-dir dist/asn/ --hot-only
 echo "✅ 规则集编译完成"
 
-# 5. 自主从原始 dat 编译生成 geoip.rdb 与 geoip-lite.rdb
-echo "🌐 正在自主编译 geoip.rdb 与 geoip-lite.rdb 复合数据库..."
+# 5. 编译纯净 3.76MB geoip.rdb 与 380KB 复合精简库 geoip-lite.rdb
+echo "🌐 正在自主编译 geoip.rdb (对齐 sing-box 纯净国家前缀树) 与 geoip-lite.rdb (复合精简库)..."
+go -C "${SCRIPT_DIR}/tools" run build_geoip.go -input "${SCRIPT_DIR}/raw/Country.mmdb" -output "${SCRIPT_DIR}/publish/geoip.rdb"
+
 if ! command -v geo >/dev/null 2>&1; then
     echo "📦 正在安装 geo 转换工具..."
     GOPROXY=https://proxy.golang.org,direct GIT_CONFIG_GLOBAL=/dev/null go install -trimpath -ldflags="-s -w" github.com/metacubex/geo/cmd/geo@master
 fi
-geo convert ip -i v2ray -o meta -f "${SCRIPT_DIR}/publish/geoip.rdb" "${SCRIPT_DIR}/raw/geoip.dat"
 geo convert ip -i v2ray -o meta -f "${SCRIPT_DIR}/publish/geoip-lite.rdb" "${SCRIPT_DIR}/raw/geoip-lite.dat"
-echo "✅ 复合数据库编译完成"
+echo "✅ 数据库编译完成"
 
 # 6. 校验与审查产物
 echo "🔍 正在抽样审查编译产物与复合数据库..."
@@ -124,12 +129,11 @@ mkdir -p /tmp/rkt_data_dist /tmp/rkt_data_pub
 cp -r "${SCRIPT_DIR}/dist"/* /tmp/rkt_data_dist/
 cp -r "${SCRIPT_DIR}/publish"/* /tmp/rkt_data_pub/
 
-# 保存当前工作区未提交修改
 CURRENT_BRANCH="$(git -C "${SCRIPT_DIR}" branch --show-current)"
 
 # 同步 rrs 分支 (无历史父提交，永远单 Commit，仅保留纯净产物)
 git -C "${SCRIPT_DIR}" checkout --orphan rrs-temp >/dev/null 2>&1
-find "${SCRIPT_DIR}" -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+find "${SCRIPT_DIR}" -mindepth 1 -maxdepth 1 ! -name '.git' ! -name 'raw' -exec rm -rf {} +
 cp -r /tmp/rkt_data_dist/* "${SCRIPT_DIR}/"
 git -C "${SCRIPT_DIR}" checkout master -- README.md >/dev/null 2>&1 || true
 git -C "${SCRIPT_DIR}" add .
@@ -139,7 +143,7 @@ git -C "${SCRIPT_DIR}" branch -m rrs
 
 # 同步 release 分支 (无历史父提交，永远单 Commit，仅保留纯净资产包与数据库)
 git -C "${SCRIPT_DIR}" checkout --orphan release-temp >/dev/null 2>&1
-find "${SCRIPT_DIR}" -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+find "${SCRIPT_DIR}" -mindepth 1 -maxdepth 1 ! -name '.git' ! -name 'raw' -exec rm -rf {} +
 cp -r /tmp/rkt_data_pub/* "${SCRIPT_DIR}/"
 git -C "${SCRIPT_DIR}" checkout master -- README.md >/dev/null 2>&1 || true
 git -C "${SCRIPT_DIR}" add .
@@ -157,5 +161,5 @@ echo "============================================================"
 echo "🎉 全流程构建成功！rrs 与 release 交付分支已由单 Commit 重置就绪！"
 echo "📊 publish/ 目录产物概览："
 echo "✨ rrs 分支：仅含纯净 asn/ geoip/ geosite/ 二进制规则集"
-echo "📦 release 分支：包含全量 Bundle 压缩包、数据库与校验文件"
+echo "📦 release 分支：包含全量 Bundle 压缩包、纯净 geoip.rdb (3.76MB)、geoip-lite.rdb (380KB) 与校验文件"
 echo "============================================================"

@@ -41,7 +41,8 @@ jobs:
       - name: Download Upstream Rules Data
         run: |
           mkdir -p raw && cd raw
-          # 1. 编译原材料全量数据源 (直接对接权威一手源，带 3 次重试容错)
+          # 1. 编译原材料全量数据源 (直接对接 MaxMind/Loyalsoldier 一手源，带 3 次重试容错)
+          curl -fsSL --retry 3 --retry-delay 2 -o Country.mmdb https://github.com/Dreamacro/maxmind-geoip/raw/release/Country.mmdb
           curl -fsSL --retry 3 --retry-delay 2 -o GeoLite2-ASN.mmdb https://raw.githubusercontent.com/xishang0128/geoip/release/GeoLite2-ASN.mmdb
           curl -fsSL --retry 3 --retry-delay 2 -o geoip.dat https://github.com/Loyalsoldier/geoip/raw/release/geoip.dat
           curl -fsSL --retry 3 --retry-delay 2 -o geosite.dat https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geosite.dat
@@ -60,8 +61,10 @@ jobs:
       - name: Compile Native .rdb Databases
         run: |
           mkdir -p publish
-          # 自主从原始 dat 编译生成复合数据库，杜绝第三方预编译二进制依赖
-          geo convert ip -i v2ray -o meta -f publish/geoip.rdb raw/geoip.dat
+          # 1. 对齐 sing-box 标准纯净前缀树 (3.76MB, 65.7 万节点)
+          go -C tools run build_geoip.go -input ../raw/Country.mmdb -output ../publish/geoip.rdb
+          
+          # 2. 软路由专用复合精简数据库 (380KB, 含 CN 核心国家与主流大厂标签)
           geo convert ip -i v2ray -o meta -f publish/geoip-lite.rdb raw/geoip-lite.dat
 
       - name: Archive Full & Lite Bundles
