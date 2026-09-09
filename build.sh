@@ -21,19 +21,50 @@ echo "✅ 编译器就绪: ${COMPILER}"
 # 2. 准备目录
 mkdir -p "${SCRIPT_DIR}/raw" "${SCRIPT_DIR}/dist/geosite" "${SCRIPT_DIR}/dist/geoip" "${SCRIPT_DIR}/dist/asn" "${SCRIPT_DIR}/publish"
 
-# 3. 下载上游数据
-echo "🌐 正在下载上游清洗规则数据源 (带重试)..."
+# 3. 下载上游数据 (直接对接 Loyalsoldier 与 xishang0128 一手数据源)
+echo "🌐 正在下载上游清洗规则数据源 (带多级容灾与镜像加速)..."
 cd "${SCRIPT_DIR}/raw"
 
-# 编译原材料全量数据
-curl -fsSL --retry 3 --retry-delay 2 -o GeoLite2-ASN.mmdb https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-ASN.mmdb
-curl -fsSL --retry 3 --retry-delay 2 -o geoip.dat https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geoip.dat
-curl -fsSL --retry 3 --retry-delay 2 -o geosite.dat https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geosite.dat
-curl -fsSL --retry 3 --retry-delay 2 -o geoip.metadb https://github.com/MetaCubeX/meta-rules-dat/raw/release/geoip.metadb
+download_file() {
+    local target="$1"
+    local primary_url="$2"
+    local backup_url="$3"
 
-# 软路由精简数据库 (Lite)
-curl -fsSL --retry 3 --retry-delay 2 -o geoip-lite.metadb https://github.com/MetaCubeX/meta-rules-dat/raw/release/geoip-lite.metadb
-echo "✅ 上游数据下载完毕"
+    if [ -s "${target}" ]; then
+        echo "⚡ ${target} 已存在且非空，跳过重复下载"
+        return 0
+    fi
+
+    echo "⬇️ 正在下载 ${target}..."
+    if ! curl -fL --retry 2 --retry-delay 2 -C - -o "${target}" "${primary_url}"; then
+        echo "⚠️ 首选源连接异常，正在尝试备用镜像..."
+        if [ -n "${backup_url}" ] && curl -fL --retry 2 --retry-delay 2 -C - -o "${target}" "${backup_url}"; then
+            return 0
+        fi
+        echo "⚠️ 备用镜像连接异常，正在通过加速镜像 ghproxy.net 获取..."
+        curl -fL --retry 3 --retry-delay 2 -C - -o "${target}" "https://ghproxy.net/${primary_url}"
+    fi
+}
+
+# 编译原材料全量数据
+download_file "GeoLite2-ASN.mmdb" \
+    "https://raw.githubusercontent.com/xishang0128/geoip/release/GeoLite2-ASN.mmdb" \
+    "https://fastly.jsdelivr.net/gh/xishang0128/geoip@release/GeoLite2-ASN.mmdb"
+
+download_file "geoip.dat" \
+    "https://github.com/Loyalsoldier/geoip/raw/release/geoip.dat" \
+    "https://fastly.jsdelivr.net/gh/Loyalsoldier/geoip@release/geoip.dat"
+
+download_file "geosite.dat" \
+    "https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geosite.dat" \
+    "https://fastly.jsdelivr.net/gh/Loyalsoldier/v2ray-rules-dat@release/geosite.dat"
+
+# 软路由精简数据 (Lite)
+download_file "geoip-lite.dat" \
+    "https://github.com/xishang0128/geoip/raw/release/geoip.dat" \
+    "https://fastly.jsdelivr.net/gh/xishang0128/geoip@release/geoip.dat"
+
+echo "✅ 上游数据准备完毕"
 
 # 4. 调用编译器生成 .rrs
 echo "⚡ 正在批量编译规则集为 .rrs 二进制格式..."
@@ -44,25 +75,35 @@ cd "${SCRIPT_DIR}"
 "${COMPILER}" convert asn --input raw/GeoLite2-ASN.mmdb --output-dir dist/asn/ --hot-only
 echo "✅ 规则集编译完成"
 
-# 5. 校验与审查产物
+# 5. 自主从原始 dat 编译生成 geoip.rdb 与 geoip-lite.rdb
+echo "🌐 正在自主编译 geoip.rdb 与 geoip-lite.rdb 复合数据库..."
+if ! command -v geo >/dev/null 2>&1; then
+    echo "📦 正在安装 geo 转换工具..."
+    GOPROXY=https://proxy.golang.org,direct GIT_CONFIG_GLOBAL=/dev/null go install -trimpath -ldflags="-s -w" github.com/metacubex/geo/cmd/geo@master
+fi
+geo convert ip -i v2ray -o meta -f "${SCRIPT_DIR}/publish/geoip.rdb" "${SCRIPT_DIR}/raw/geoip.dat"
+geo convert ip -i v2ray -o meta -f "${SCRIPT_DIR}/publish/geoip-lite.rdb" "${SCRIPT_DIR}/raw/geoip-lite.dat"
+echo "✅ 复合数据库编译完成"
+
+# 6. 校验与审查产物
 echo "🔍 正在抽样审查编译产物与复合数据库..."
 "${COMPILER}" inspect dist/geosite/geosite-cn.rrs
 "${COMPILER}" inspect dist/geosite/geosite-openai.rrs
 "${COMPILER}" inspect dist/geoip/geoip-cn.rrs
 "${COMPILER}" inspect dist/asn/AS13335.rrs
-"${COMPILER}" inspect raw/geoip.metadb
-"${COMPILER}" inspect raw/geoip-lite.metadb
+"${COMPILER}" inspect publish/geoip.rdb
+"${COMPILER}" inspect publish/geoip-lite.rdb
 
-# 6. 规则命中测试
+# 7. 规则命中测试
 echo "🧪 正在执行规则匹配测试..."
 "${COMPILER}" test domain --ruleset dist/geosite/geosite-cn.rrs --target "baidu.com"
 "${COMPILER}" test domain --ruleset dist/geosite/geosite-openai.rrs --target "api.openai.com"
 "${COMPILER}" test ip --ruleset dist/geoip/geoip-cn.rrs --target "114.114.114.114"
 "${COMPILER}" test ip --ruleset dist/asn/AS13335.rrs --target "1.1.1.1"
-"${COMPILER}" test ip --ruleset raw/geoip.metadb --target "114.114.114.114"
-"${COMPILER}" test ip --ruleset raw/geoip-lite.metadb --target "114.114.114.114"
+"${COMPILER}" test ip --ruleset publish/geoip.rdb --target "114.114.114.114"
+"${COMPILER}" test ip --ruleset publish/geoip-lite.rdb --target "114.114.114.114"
 
-# 7. 打包归档 Full 与 Lite 总包
+# 8. 打包归档 Full 与 Lite 总包
 echo "📦 正在打包归档资产..."
 cd "${SCRIPT_DIR}/dist"
 7z a -mx=9 "${SCRIPT_DIR}/publish/BundleRRS.7z" ./*/*.rrs
@@ -72,21 +113,19 @@ cp geosite/geosite-cn.rrs geosite/geosite-openai.rrs geosite/geosite-google.rrs 
 cd /tmp/lite_rrs && 7z a -mx=9 "${SCRIPT_DIR}/publish/BundleRRS-lite.7z" ./*.rrs && cd -
 rm -rf /tmp/lite_rrs
 
-# 复制原生复合数据库 (Full & Lite)
-cd "${SCRIPT_DIR}"
-cp raw/geoip.metadb publish/geoip.rdb
-cp raw/geoip-lite.metadb publish/geoip-lite.rdb
-
 # 生成校验和
-cd publish
+cd "${SCRIPT_DIR}/publish"
 sha256sum * > sha256sums.txt
 
-# 8. 自动同步交付物到本地 rrs 与 release 分支 (Orphan 单 Commit 覆盖，根绝 Git 历史体积膨胀)
+# 9. 自动同步交付物到本地 rrs 与 release 分支 (Orphan 单 Commit 覆盖，根绝 Git 历史体积膨胀)
 echo "🌿 正在将生成交付物同步至本地 rrs 与 release 分支 (Orphan 单 Commit 覆盖模式)..."
 rm -rf /tmp/rkt_data_dist /tmp/rkt_data_pub
 mkdir -p /tmp/rkt_data_dist /tmp/rkt_data_pub
 cp -r "${SCRIPT_DIR}/dist"/* /tmp/rkt_data_dist/
 cp -r "${SCRIPT_DIR}/publish"/* /tmp/rkt_data_pub/
+
+# 保存当前工作区未提交修改
+CURRENT_BRANCH="$(git -C "${SCRIPT_DIR}" branch --show-current)"
 
 # 同步 rrs 分支 (无历史父提交，永远单 Commit，仅保留纯净产物)
 git -C "${SCRIPT_DIR}" checkout --orphan rrs-temp >/dev/null 2>&1
@@ -108,7 +147,7 @@ git -C "${SCRIPT_DIR}" commit -m "Release assets: $(date -u +'%Y-%m-%d %H:%M:%S 
 git -C "${SCRIPT_DIR}" branch -D release >/dev/null 2>&1 || true
 git -C "${SCRIPT_DIR}" branch -m release
 
-git -C "${SCRIPT_DIR}" checkout -f master
+git -C "${SCRIPT_DIR}" checkout "${CURRENT_BRANCH}"
 rm -rf /tmp/rkt_data_dist /tmp/rkt_data_pub
 
 # 自动修剪悬空历史对象，保持 .git 极度轻巧
