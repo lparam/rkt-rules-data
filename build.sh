@@ -19,11 +19,12 @@ fi
 echo "✅ 编译器就绪: ${COMPILER}"
 
 # 2. 准备目录
-mkdir -p "${SCRIPT_DIR}/raw" "${SCRIPT_DIR}/dist/geosite" "${SCRIPT_DIR}/dist/geoip" "${SCRIPT_DIR}/dist/asn" "${SCRIPT_DIR}/publish"
+RAW_DIR="${RKT_RAW_CACHE:-/tmp/rkt_data_raw}"
+mkdir -p "${RAW_DIR}" "${SCRIPT_DIR}/dist/geosite" "${SCRIPT_DIR}/dist/geoip" "${SCRIPT_DIR}/dist/asn" "${SCRIPT_DIR}/publish"
 
 # 3. 下载上游数据 (直接对接 MaxMind, Loyalsoldier 与 xishang0128 一手数据源)
 echo "🌐 正在下载上游清洗规则数据源 (带多级容灾与镜像加速)..."
-cd "${SCRIPT_DIR}/raw"
+cd "${RAW_DIR}"
 
 download_file() {
     local target="$1"
@@ -74,20 +75,20 @@ echo "✅ 上游数据准备完毕"
 echo "⚡ 正在批量编译规则集为 .rrs 二进制格式..."
 cd "${SCRIPT_DIR}"
 
-"${COMPILER}" convert site --input raw/geosite.dat --output-dir dist/geosite/
-"${COMPILER}" convert ip --input raw/geoip.dat --output-dir dist/geoip/
-"${COMPILER}" convert asn --input raw/GeoLite2-ASN.mmdb --output-dir dist/asn/ --hot-only
+"${COMPILER}" convert site --input "${RAW_DIR}/geosite.dat" --output-dir dist/geosite/
+"${COMPILER}" convert ip --input "${RAW_DIR}/geoip.dat" --output-dir dist/geoip/
+"${COMPILER}" convert asn --input "${RAW_DIR}/GeoLite2-ASN.mmdb" --output-dir dist/asn/ --hot-only
 echo "✅ 规则集编译完成"
 
 # 5. 编译纯净 3.76MB geoip.rdb 与 380KB 复合精简库 geoip-lite.rdb
 echo "🌐 正在自主编译 geoip.rdb (对齐 sing-box 纯净国家前缀树) 与 geoip-lite.rdb (复合精简库)..."
-go -C "${SCRIPT_DIR}/tools" run build_geoip.go -input "${SCRIPT_DIR}/raw/Country.mmdb" -output "${SCRIPT_DIR}/publish/geoip.rdb"
+go -C "${SCRIPT_DIR}/tools" run build_geoip.go -input "${RAW_DIR}/Country.mmdb" -output "${SCRIPT_DIR}/publish/geoip.rdb"
 
 if ! command -v geo >/dev/null 2>&1; then
     echo "📦 正在安装 geo 转换工具..."
     GOPROXY=https://proxy.golang.org,direct GIT_CONFIG_GLOBAL=/dev/null go install -trimpath -ldflags="-s -w" github.com/metacubex/geo/cmd/geo@master
 fi
-geo convert ip -i v2ray -o meta -f "${SCRIPT_DIR}/publish/geoip-lite.rdb" "${SCRIPT_DIR}/raw/geoip-lite.dat"
+geo convert ip -i v2ray -o meta -f "${SCRIPT_DIR}/publish/geoip-lite.rdb" "${RAW_DIR}/geoip-lite.dat"
 echo "✅ 数据库编译完成"
 
 # 6. 校验与审查产物
@@ -134,7 +135,7 @@ CURRENT_BRANCH="$(git -C "${SCRIPT_DIR}" branch --show-current)"
 # 同步 rrs 分支 (无历史父提交，永远单 Commit，仅保留纯净产物)
 git -C "${SCRIPT_DIR}" checkout --orphan rrs-temp >/dev/null 2>&1
 git -C "${SCRIPT_DIR}" rm -rf . >/dev/null 2>&1 || true
-find "${SCRIPT_DIR}" -mindepth 1 -maxdepth 1 ! -name '.git' ! -name 'raw' -exec rm -rf {} +
+find "${SCRIPT_DIR}" -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
 cp -r /tmp/rkt_data_dist/* "${SCRIPT_DIR}/"
 git -C "${SCRIPT_DIR}" checkout master -- README.md >/dev/null 2>&1 || true
 git -C "${SCRIPT_DIR}" add -f asn geosite geoip README.md
@@ -145,7 +146,7 @@ git -C "${SCRIPT_DIR}" branch -m rrs
 # 同步 release 分支 (无历史父提交，永远单 Commit，仅保留纯净资产包与数据库)
 git -C "${SCRIPT_DIR}" checkout --orphan release-temp >/dev/null 2>&1
 git -C "${SCRIPT_DIR}" rm -rf . >/dev/null 2>&1 || true
-find "${SCRIPT_DIR}" -mindepth 1 -maxdepth 1 ! -name '.git' ! -name 'raw' -exec rm -rf {} +
+find "${SCRIPT_DIR}" -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
 cp -r /tmp/rkt_data_pub/* "${SCRIPT_DIR}/"
 git -C "${SCRIPT_DIR}" checkout master -- README.md >/dev/null 2>&1 || true
 git -C "${SCRIPT_DIR}" add -f BundleRRS.7z BundleRRS-lite.7z geoip.rdb geoip-lite.rdb sha256sums.txt README.md
