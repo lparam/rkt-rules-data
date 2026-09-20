@@ -2,12 +2,12 @@
 
 ## 资源下载
 
-| 文件名 | GitHub Release | jsDelivr CDN | TestingCF CDN | 说明 |
+| 文件名 | GitHub | jsDelivr | TestingCF | 说明 |
 | :--- | :--- | :--- | :--- | :--- |
-| **geoip.rdb** | [下载](https://github.com/lparam/rkt-rules-data/releases/download/latest/geoip.rdb) | [下载](https://cdn.jsdelivr.net/gh/lparam/rkt-rules-data@release/geoip.rdb) | [下载](https://testingcf.jsdelivr.net/gh/lparam/rkt-rules-data@release/geoip.rdb) | 标准全球 IP 数据库 (~3.76 MB) |
-| **geoip-lite.rdb** | [下载](https://github.com/lparam/rkt-rules-data/releases/download/latest/geoip-lite.rdb) | [下载](https://cdn.jsdelivr.net/gh/lparam/rkt-rules-data@release/geoip-lite.rdb) | [下载](https://testingcf.jsdelivr.net/gh/lparam/rkt-rules-data@release/geoip-lite.rdb) | 复合精简 IP 数据库 (~380 KB) |
-| **BundleRRS.7z** | [下载](https://github.com/lparam/rkt-rules-data/releases/download/latest/BundleRRS.7z) | [下载](https://cdn.jsdelivr.net/gh/lparam/rkt-rules-data@release/BundleRRS.7z) | [下载](https://testingcf.jsdelivr.net/gh/lparam/rkt-rules-data@release/BundleRRS.7z) | 全量 `.rrs` 规则集压缩包 (~9.1 MB) |
-| **BundleRRS-lite.7z** | [下载](https://github.com/lparam/rkt-rules-data/releases/download/latest/BundleRRS-lite.7z) | [下载](https://cdn.jsdelivr.net/gh/lparam/rkt-rules-data@release/BundleRRS-lite.7z) | [下载](https://testingcf.jsdelivr.net/gh/lparam/rkt-rules-data@release/BundleRRS-lite.7z) | 常用精简 `.rrs` 压缩包 (~2.2 MB) |
+| **geoip.rdb** | [下载](https://github.com/lparam/rkt-rules-data/releases/download/latest/geoip.rdb) | [下载](https://cdn.jsdelivr.net/gh/lparam/rkt-rules-data@release/geoip.rdb) | [下载](https://testingcf.jsdelivr.net/gh/lparam/rkt-rules-data@release/geoip.rdb) | 标准全球 IP 数据库 |
+| **geoip-lite.rdb** | [下载](https://github.com/lparam/rkt-rules-data/releases/download/latest/geoip-lite.rdb) | [下载](https://cdn.jsdelivr.net/gh/lparam/rkt-rules-data@release/geoip-lite.rdb) | [下载](https://testingcf.jsdelivr.net/gh/lparam/rkt-rules-data@release/geoip-lite.rdb) | 复合精简 IP 数据库 |
+| **BundleRRS.7z** | [下载](https://github.com/lparam/rkt-rules-data/releases/download/latest/BundleRRS.7z) | [下载](https://cdn.jsdelivr.net/gh/lparam/rkt-rules-data@release/BundleRRS.7z) | [下载](https://testingcf.jsdelivr.net/gh/lparam/rkt-rules-data@release/BundleRRS.7z) | 全量 `.rrs` 压缩包 |
+| **BundleRRS-lite.7z** | [下载](https://github.com/lparam/rkt-rules-data/releases/download/latest/BundleRRS-lite.7z) | [下载](https://cdn.jsdelivr.net/gh/lparam/rkt-rules-data@release/BundleRRS-lite.7z) | [下载](https://testingcf.jsdelivr.net/gh/lparam/rkt-rules-data@release/BundleRRS-lite.7z) | 常用精简 `.rrs` 压缩包 |
 
 ### 独立规则集 (按需直连)
 
