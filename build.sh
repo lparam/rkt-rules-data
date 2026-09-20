@@ -67,8 +67,8 @@ download_file "geoip.dat" \
     "https://fastly.jsdelivr.net/gh/Loyalsoldier/geoip@release/geoip.dat"
 
 download_file "geosite.dat" \
-    "https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geosite.dat" \
-    "https://fastly.jsdelivr.net/gh/Loyalsoldier/v2ray-rules-dat@release/geosite.dat"
+    "https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat" \
+    "https://raw.githubusercontent.com/v2fly/domain-list-community/release/dlc.dat"
 
 # 软路由精简数据 (Lite)
 download_file "geoip-lite.dat" \

@@ -44,7 +44,7 @@ jobs:
           curl -fsSL --retry 3 --retry-delay 2 -o Country.mmdb https://github.com/Dreamacro/maxmind-geoip/raw/release/Country.mmdb
           curl -fsSL --retry 3 --retry-delay 2 -o GeoLite2-ASN.mmdb https://raw.githubusercontent.com/xishang0128/geoip/release/GeoLite2-ASN.mmdb
           curl -fsSL --retry 3 --retry-delay 2 -o geoip.dat https://github.com/Loyalsoldier/geoip/raw/release/geoip.dat
-          curl -fsSL --retry 3 --retry-delay 2 -o geosite.dat https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geosite.dat
+          curl -fsSL --retry 3 --retry-delay 2 -o geosite.dat https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat
           
           # 2. 软路由/低内存专用精简原材料 (Lite)
           curl -fsSL --retry 3 --retry-delay 2 -o geoip-lite.dat https://github.com/xishang0128/geoip/raw/release/geoip.dat
