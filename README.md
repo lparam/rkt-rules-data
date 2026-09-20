@@ -43,5 +43,5 @@ rules:
 ## 数据源说明
 
 - **geosite**: 上游同步自 [@v2fly/domain-list-community](https://github.com/v2fly/domain-list-community)
-- **geoip**: 基础数据同步自 [@Dreamacro/maxmind-geoip](https://github.com/Dreamacro/maxmind-geoip)
-- **asn**: 自治域数据库同步自 [@xishang0128/geoip](https://github.com/xishang0128/geoip)
+- **geoip**: 基础数据同步自 [@Dreamacro/maxmind-geoip](https://github.com/Dreamacro/maxmind-geoip/tree/release)
+- **asn**: 自治域数据库同步自 [@xishang0128/geoip](https://github.com/xishang0128/geoip/tree/release)
