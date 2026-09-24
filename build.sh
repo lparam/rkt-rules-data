@@ -75,6 +75,15 @@ download_file "geoip-lite.dat" \
     "https://github.com/xishang0128/geoip/raw/release/geoip.dat" \
     "https://fastly.jsdelivr.net/gh/xishang0128/geoip@release/geoip.dat"
 
+# 广告拦截融合原材料 (Loyalsoldier 国际源 + anti-AD 中文源)
+download_file "reject-list-loyalsoldier.txt" \
+    "https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/reject-list.txt" \
+    "https://testingcf.jsdelivr.net/gh/Loyalsoldier/v2ray-rules-dat@release/reject-list.txt"
+
+download_file "anti-ad-domains.txt" \
+    "https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-domains.txt" \
+    "https://testingcf.jsdelivr.net/gh/privacy-protection-tools/anti-AD@master/anti-ad-domains.txt"
+
 echo "✅ 上游数据准备完毕"
 
 # 4. 调用编译器生成 .rrs
@@ -84,6 +93,18 @@ cd "${SCRIPT_DIR}"
 "${COMPILER}" convert site --input "${RAW_DIR}/geosite.dat" --output-dir dist/geosite/
 "${COMPILER}" convert ip --input "${RAW_DIR}/geoip.dat" --output-dir dist/geoip/
 "${COMPILER}" convert asn --input "${RAW_DIR}/GeoLite2-ASN.mmdb" --output-dir dist/asn/ --hot-only
+
+# 4.1 保留 v2fly 官方轻量版广告规则为 geosite-category-ads-lite.rrs
+if [ -f "dist/geosite/geosite-category-ads-all.rrs" ]; then
+    cp "dist/geosite/geosite-category-ads-all.rrs" "dist/geosite/geosite-category-ads-lite.rrs"
+fi
+
+# 4.2 融合 Loyalsoldier (EasyList+AdGuard) 与 anti-AD 编译全能旗舰版广告拦截规则
+echo "🛡️ 正在融合 Loyalsoldier 与 anti-AD 编译全能版广告拦截规则..."
+cat "${RAW_DIR}/reject-list-loyalsoldier.txt" "${RAW_DIR}/anti-ad-domains.txt" \
+    | grep -v '^[[:space:]]*#' | grep -v '^[[:space:]]*//' | tr -d '\r' | awk 'NF' | sort -u > "${RAW_DIR}/ads-merged.txt"
+"${COMPILER}" convert text --input "${RAW_DIR}/ads-merged.txt" --output dist/geosite/geosite-category-ads-all.rrs --type domain
+cp dist/geosite/geosite-category-ads-all.rrs dist/geosite/geosite-category-ads.rrs
 echo "✅ 规则集编译完成"
 
 # 5. 编译纯净 3.76MB geoip.rdb 与 380KB 复合精简库 geoip-lite.rdb
@@ -101,6 +122,8 @@ echo "✅ 数据库编译完成"
 echo "🔍 正在抽样审查编译产物与复合数据库..."
 "${COMPILER}" inspect dist/geosite/geosite-cn.rrs
 "${COMPILER}" inspect dist/geosite/geosite-openai.rrs
+"${COMPILER}" inspect dist/geosite/geosite-category-ads-all.rrs
+"${COMPILER}" inspect dist/geosite/geosite-category-ads-lite.rrs
 "${COMPILER}" inspect dist/geoip/geoip-cn.rrs
 "${COMPILER}" inspect dist/asn/AS13335.rrs
 "${COMPILER}" inspect publish/geoip.rdb
@@ -110,6 +133,9 @@ echo "🔍 正在抽样审查编译产物与复合数据库..."
 echo "🧪 正在执行规则匹配测试..."
 "${COMPILER}" test domain --ruleset dist/geosite/geosite-cn.rrs --target "baidu.com"
 "${COMPILER}" test domain --ruleset dist/geosite/geosite-openai.rrs --target "api.openai.com"
+"${COMPILER}" test domain --ruleset dist/geosite/geosite-category-ads-all.rrs --target "adservice.google.com"
+"${COMPILER}" test domain --ruleset dist/geosite/geosite-category-ads-all.rrs --target "e.qq.com"
+"${COMPILER}" test domain --ruleset dist/geosite/geosite-category-ads-lite.rrs --target "adservice.google.com"
 "${COMPILER}" test ip --ruleset dist/geoip/geoip-cn.rrs --target "114.114.114.114"
 "${COMPILER}" test ip --ruleset dist/asn/AS13335.rrs --target "1.1.1.1"
 "${COMPILER}" test ip --ruleset publish/geoip.rdb --target "114.114.114.114"
@@ -121,7 +147,7 @@ cd "${SCRIPT_DIR}/dist"
 7z a -mx=9 "${SCRIPT_DIR}/publish/BundleRRS.7z" ./*/*.rrs
 
 mkdir -p /tmp/lite_rrs
-cp geosite/geosite-cn.rrs geosite/geosite-openai.rrs geosite/geosite-google.rrs geosite/geosite-category-ads-all.rrs geoip/geoip-cn.rrs geoip/geoip-private.rrs /tmp/lite_rrs/ 2>/dev/null || true
+cp geosite/geosite-cn.rrs geosite/geosite-openai.rrs geosite/geosite-google.rrs geosite/geosite-category-ads-all.rrs geosite/geosite-category-ads-lite.rrs geoip/geoip-cn.rrs geoip/geoip-private.rrs /tmp/lite_rrs/ 2>/dev/null || true
 cd /tmp/lite_rrs && 7z a -mx=9 "${SCRIPT_DIR}/publish/BundleRRS-lite.7z" ./*.rrs && cd -
 rm -rf /tmp/lite_rrs
 

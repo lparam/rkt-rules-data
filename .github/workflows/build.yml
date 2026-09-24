@@ -49,6 +49,10 @@ jobs:
           # 2. 软路由/低内存专用精简原材料 (Lite)
           curl -fsSL --retry 3 --retry-delay 2 -o geoip-lite.dat https://github.com/xishang0128/geoip/raw/release/geoip.dat
 
+          # 3. 广告拦截融合原材料 (Loyalsoldier 国际源 + anti-AD 中文源)
+          curl -fsSL --retry 3 --retry-delay 2 -o reject-list-loyalsoldier.txt https://github.com/Loyalsoldier/v2ray-rules-dat/raw/release/reject-list.txt
+          curl -fsSL --retry 3 --retry-delay 2 -o anti-ad-domains.txt https://github.com/privacy-protection-tools/anti-AD/raw/master/anti-ad-domains.txt
+
       - name: Compile to Native .rrs Rulesets
         run: |
           mkdir -p dist/geosite dist/geoip dist/asn
@@ -56,6 +60,17 @@ jobs:
           rkt-rules-compiler convert site --input raw/geosite.dat --output-dir dist/geosite/
           rkt-rules-compiler convert ip --input raw/geoip.dat --output-dir dist/geoip/
           rkt-rules-compiler convert asn --input raw/GeoLite2-ASN.mmdb --output-dir dist/asn/ --hot-only
+
+          # 1. 保留 v2fly 官方轻量版广告规则为 geosite-category-ads-lite.rrs
+          if [ -f "dist/geosite/geosite-category-ads-all.rrs" ]; then
+            cp "dist/geosite/geosite-category-ads-all.rrs" "dist/geosite/geosite-category-ads-lite.rrs"
+          fi
+
+          # 2. 融合 Loyalsoldier 与 anti-AD 编译全能旗舰版广告拦截规则
+          cat raw/reject-list-loyalsoldier.txt raw/anti-ad-domains.txt \
+            | grep -v '^[[:space:]]*#' | grep -v '^[[:space:]]*//' | tr -d '\r' | awk 'NF' | sort -u > raw/ads-merged.txt
+          rkt-rules-compiler convert text --input raw/ads-merged.txt --output dist/geosite/geosite-category-ads-all.rrs --type domain
+          cp dist/geosite/geosite-category-ads-all.rrs dist/geosite/geosite-category-ads.rrs
 
       - name: Compile Native .rdb Databases
         run: |
@@ -71,9 +86,9 @@ jobs:
           # 1. 全量 7z 总包 (高压缩比，包含所有 .rrs)
           cd dist && 7z a -mx=9 ../publish/BundleRRS.7z ./*/*.rrs && cd ..
           
-          # 2. 嵌入式软路由专用精简核心总包 (BundleRRS-lite.7z, ~2.2MB)
+          # 2. 嵌入式软路由专用精简核心总包 (BundleRRS-lite.7z, 包含核心分流及两套广告拦截)
           mkdir -p /tmp/lite_rrs
-          cp dist/geosite/geosite-cn.rrs dist/geosite/geosite-openai.rrs dist/geosite/geosite-google.rrs dist/geosite/geosite-category-ads-all.rrs dist/geoip/geoip-cn.rrs dist/geoip/geoip-private.rrs /tmp/lite_rrs/ 2>/dev/null || true
+          cp dist/geosite/geosite-cn.rrs dist/geosite/geosite-openai.rrs dist/geosite/geosite-google.rrs dist/geosite/geosite-category-ads-all.rrs dist/geosite/geosite-category-ads-lite.rrs dist/geoip/geoip-cn.rrs dist/geoip/geoip-private.rrs /tmp/lite_rrs/ 2>/dev/null || true
           cd /tmp/lite_rrs && 7z a -mx=9 /tmp/BundleRRS-lite.7z ./*.rrs && cd -
           mv /tmp/BundleRRS-lite.7z publish/
           

@@ -23,7 +23,7 @@
 
 ```yaml
 rules:
-  # 广告拦截
+  # 广告拦截 (全能旗舰版，或使用轻量版 geosite-category-ads-lite)
   - RULE-SET,geosite-category-ads-all,REJECT
 
   # 本地直连
@@ -42,6 +42,8 @@ rules:
 
 ## 数据源说明
 
-- **geosite**: 上游同步自 [@v2fly/domain-list-community](https://github.com/v2fly/domain-list-community)
+- **geosite**: 主力分流同步自 [@v2fly/domain-list-community](https://github.com/v2fly/domain-list-community) 官方社区一手源
+- **geosite-category-ads-all**: 旗舰广告拦截，融合自 [@Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat/tree/release) 与 [@privacy-protection-tools/anti-AD](https://github.com/privacy-protection-tools/anti-AD)（海内外全量通杀）
+- **geosite-category-ads-lite**: 轻量精简广告拦截，基于 [@v2fly/domain-list-community](https://github.com/v2fly/domain-list-community) 原生广告集（极低内存、零误杀）
 - **geoip**: 基础数据同步自 [@Dreamacro/maxmind-geoip](https://github.com/Dreamacro/maxmind-geoip/tree/release)
 - **asn**: 自治域数据库同步自 [@xishang0128/geoip](https://github.com/xishang0128/geoip/tree/release)
