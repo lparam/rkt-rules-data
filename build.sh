@@ -13,7 +13,7 @@ COMPILER="${SCRIPT_DIR}/tools/bin/rkt-rules-compiler"
 if [ ! -f "${COMPILER}" ]; then
     if [ -f "${WORKSPACE_ROOT}/Cargo.toml" ]; then
         echo "📦 正在从本地 rkt 源码编译 rkt-rules-compiler..."
-        cargo build --release --manifest-path "${WORKSPACE_ROOT}/Cargo.toml" -p rkt-rules --bin rkt-rules-compiler
+        cargo build --release --manifest-path "${WORKSPACE_ROOT}/Cargo.toml" -p rules --bin rkt-rules-compiler
         mkdir -p "${SCRIPT_DIR}/tools/bin"
         cp "${WORKSPACE_ROOT}/target/release/rkt-rules-compiler" "${COMPILER}"
     else
