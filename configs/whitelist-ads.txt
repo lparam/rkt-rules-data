@@ -1,0 +1,27 @@
+# rkt 广告拦截白名单 (Whitelist for Category-Ads)
+# 
+# 用于从上游广告/追踪规则库中剔除核心应用的基础设施、HTTPDNS 调度器及关键服务域名，
+# 防止因激进拦截导致客户端 fallback 降级连接或异常。
+
+# 微信核心 HTTPDNS 调度中心 (防 DNS 劫持调度，非广告投放)
+dns.weixin.qq.com.cn
+aedns.weixin.qq.com
+dns.weixin.qq.com
+
+# 腾讯服务基础探测与公共解析
+httpdns.pro.wechat.com
+httpdns.c.cdnhwc1.com
+httpdns.gslb.lecloud.com
+
+# 阿里云 / 淘宝移动核心 HTTPDNS
+httpdns.alicdn.com
+httpdns-api.alicdn.com
+httpdns-sc.aliyuncs.com
+
+# 百度移动基础设施
+httpdns.baidu.com
+httpdns.baidubce.com
+
+# 字节跳动 / 抖音基础服务
+dig.bdurl.net
+httpdns.volces.com

@@ -7,3 +7,4 @@ target/
 *.dat
 *.7z
 *.txt
+!configs/*.txt
