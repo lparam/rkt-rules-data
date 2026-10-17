@@ -99,10 +99,21 @@ if [ -f "dist/geosite/geosite-category-ads-all.rrs" ]; then
     cp "dist/geosite/geosite-category-ads-all.rrs" "dist/geosite/geosite-category-ads-lite.rrs"
 fi
 
-# 4.2 融合 Loyalsoldier (EasyList+AdGuard) 与 anti-AD 编译全能旗舰版广告拦截规则
-echo "🛡️ 正在融合 Loyalsoldier 与 anti-AD 编译全能版广告拦截规则..."
+# 4.2 融合 Loyalsoldier (EasyList+AdGuard) 与 anti-AD 编译全能旗舰版广告拦截规则 (并应用白名单清洗)
+echo "🛡️ 正在融合 Loyalsoldier 与 anti-AD 并应用核心服务白名单清洗..."
 cat "${RAW_DIR}/reject-list-loyalsoldier.txt" "${RAW_DIR}/anti-ad-domains.txt" \
-    | grep -v '^[[:space:]]*#' | grep -v '^[[:space:]]*//' | tr -d '\r' | awk 'NF' | sort -u > "${RAW_DIR}/ads-merged.txt"
+    | grep -v '^[[:space:]]*#' | grep -v '^[[:space:]]*//' | tr -d '\r' | awk 'NF' | sort -u > "${RAW_DIR}/ads-raw.txt"
+
+# 应用白名单过滤
+WHITELIST_FILE="${SCRIPT_DIR}/configs/whitelist-ads.txt"
+if [ -f "${WHITELIST_FILE}" ]; then
+    grep -v '^[[:space:]]*#' "${WHITELIST_FILE}" | grep -v '^[[:space:]]*//' | tr -d '\r' | awk 'NF' > "${RAW_DIR}/whitelist-clean.txt"
+    grep -vFf "${RAW_DIR}/whitelist-clean.txt" "${RAW_DIR}/ads-raw.txt" > "${RAW_DIR}/ads-merged.txt"
+    echo "🧹 已过滤白名单核心应用域名，剩余广告拦截域名数: $(wc -l < "${RAW_DIR}/ads-merged.txt")"
+else
+    mv "${RAW_DIR}/ads-raw.txt" "${RAW_DIR}/ads-merged.txt"
+fi
+
 "${COMPILER}" convert text --input "${RAW_DIR}/ads-merged.txt" --output dist/geosite/geosite-category-ads-all.rrs --type domain
 cp dist/geosite/geosite-category-ads-all.rrs dist/geosite/geosite-category-ads.rrs
 echo "✅ 规则集编译完成"

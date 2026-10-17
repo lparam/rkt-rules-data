@@ -66,9 +66,17 @@ jobs:
             cp "dist/geosite/geosite-category-ads-all.rrs" "dist/geosite/geosite-category-ads-lite.rrs"
           fi
 
-          # 2. 融合 Loyalsoldier 与 anti-AD 编译全能旗舰版广告拦截规则
+          # 2. 融合 Loyalsoldier 与 anti-AD 编译全能旗舰版广告拦截规则 (并应用白名单清洗)
           cat raw/reject-list-loyalsoldier.txt raw/anti-ad-domains.txt \
-            | grep -v '^[[:space:]]*#' | grep -v '^[[:space:]]*//' | tr -d '\r' | awk 'NF' | sort -u > raw/ads-merged.txt
+            | grep -v '^[[:space:]]*#' | grep -v '^[[:space:]]*//' | tr -d '\r' | awk 'NF' | sort -u > raw/ads-raw.txt
+
+          if [ -f "configs/whitelist-ads.txt" ]; then
+            grep -v '^[[:space:]]*#' configs/whitelist-ads.txt | grep -v '^[[:space:]]*//' | tr -d '\r' | awk 'NF' > raw/whitelist-clean.txt
+            grep -vFf raw/whitelist-clean.txt raw/ads-raw.txt > raw/ads-merged.txt
+          else
+            mv raw/ads-raw.txt raw/ads-merged.txt
+          fi
+
           rkt-rules-compiler convert text --input raw/ads-merged.txt --output dist/geosite/geosite-category-ads-all.rrs --type domain
           cp dist/geosite/geosite-category-ads-all.rrs dist/geosite/geosite-category-ads.rrs
 
