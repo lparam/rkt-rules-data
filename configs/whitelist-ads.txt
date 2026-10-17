@@ -29,3 +29,6 @@ httpdns.baidubce.com
 # 字节跳动 / 抖音基础服务
 dig.bdurl.net
 httpdns.volces.com
+
+# Google 客户端基础设施 (防过度拦截 Chrome 更新、扩展同步与 A/B 变体配置)
+clientservices.googleapis.com
