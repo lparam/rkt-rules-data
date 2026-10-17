@@ -8,6 +8,10 @@ dns.weixin.qq.com.cn
 aedns.weixin.qq.com
 dns.weixin.qq.com
 
+# 微信生态小程序与公众号核心业务资源（防去广告规则误伤正常图片与业务加载）
+wximg.wxs.qq.com
+wxs.qq.com
+
 # 腾讯服务基础探测与公共解析
 httpdns.pro.wechat.com
 httpdns.c.cdnhwc1.com
